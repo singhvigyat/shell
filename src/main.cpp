@@ -31,6 +31,19 @@ int main()
       getline(ss, str);
       cout << str << endl;
     }
+    else if (cmd == "type")
+    {
+      string str;
+      getline(ss, str);
+      if (str == "type" || str == "echo" || str == "exit")
+      {
+        cout << str << " " << "is a shell builtin" << endl;
+      }
+      else
+      {
+        cout << str  << ": not found" << endl;
+      }
+    }
     else
     {
       cout << s << ": command not found" << endl;
