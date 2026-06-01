@@ -25,6 +25,7 @@ int main()
     string cmd;
     getline(ss, cmd, ' ');
 
+    //condition checking 
     if (cmd == "echo")
     {
       string str;
