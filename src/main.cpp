@@ -59,6 +59,7 @@ int main()
           // processing the string;
           stringstream ss(ch);
           string dir;
+          cout << "PATH = " << getenv("PATH") << endl;
           while (getline(ss, dir, ';'))
           {
             filesystem::path p = dir;
