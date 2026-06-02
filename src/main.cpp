@@ -5,11 +5,16 @@
 using namespace std;
 namespace filesystem = std::filesystem; 
 
+// #ifdef, #else, #endif — preprocessor directives
+// _WIN32 — a predefined compiler macro
+// The whole block — conditional compilation
 #ifdef _WIN32
     char separator = ';'; 
 #else 
     char separator = ':'; 
 #endif
+
+
 
 int main()
 {
