@@ -76,7 +76,7 @@ int main()
               filesystem::perms permission = status(p).permissions();
               if ((permission & filesystem::perms::owner_exec) != filesystem::perms::none)
               {
-                cout << str << " is " << p << endl;
+                cout << str << " is " << p.string() << endl;
                 ba = true;
                 break;
               }
