@@ -1,7 +1,9 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <filesystem>
 using namespace std;
+namespace filesystem = std::filesystem; 
 
 int main()
 {
@@ -25,7 +27,7 @@ int main()
     string cmd;
     getline(ss, cmd, ' ');
 
-    //condition checking 
+    // condition checking
     if (cmd == "echo")
     {
       string str;
@@ -42,7 +44,42 @@ int main()
       }
       else
       {
-        cout << str  << ": not found" << endl;
+        // keep this read only(do const char*ch), as this returns the memory owned by the environment, not by our program, so we won't be modifying this, directly, as its not safe.
+
+        // this we're not doing string = getenv("PATH") because it may return nullptr, & we can't do string of nullptr.
+
+        // char ch* -> points to same memory (no copy )
+        // string s -> points to different memory (its own copy)
+        const char *ch = getenv("PATH");
+
+        bool ba = false;
+        if (ch)
+        {
+          // string PATH(ch);
+          // processing the string;
+          stringstream ss(ch);
+          string dir;
+          while (getline(ss, dir, ';'))
+          {
+            filesystem::path p = dir;
+            // joins str to p => p + str;
+            p /= str;
+            if (filesystem::exists(p))
+            {
+              filesystem::perms permission = status(p).permissions();
+              if ((permission & filesystem::perms::owner_exec) != filesystem::perms::none)
+              {
+                cout << str << " is " << p << endl;
+                ba = true;
+                break;
+              }
+            }
+
+            // cout << dir << endl;
+          }
+        }
+        if (!ba)
+          cout << str << ": not found" << endl;
       }
     }
     else
