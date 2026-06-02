@@ -5,6 +5,12 @@
 using namespace std;
 namespace filesystem = std::filesystem; 
 
+#ifdef _WIN32
+    char separator = ';'; 
+#else 
+    char separator = ':'; 
+#endif
+
 int main()
 {
   // Flush after every std::cout / std:cerr
@@ -60,7 +66,7 @@ int main()
           stringstream ss(ch);
           string dir;
           cout << "PATH = " << getenv("PATH") << endl;
-          while (getline(ss, dir, ';'))
+          while (getline(ss, dir, separator))
           {
             filesystem::path p = dir;
             // joins str to p => p + str;
