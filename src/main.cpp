@@ -66,7 +66,7 @@ int main()
       }
       else
       {
-        cout << "cd: " << new_directory_path_string << ": " << "No such file or directory" << endl;
+        cout << "cd: " << s.substr(3) << ": " << "No such file or directory" << endl;
       }
     }
     else
