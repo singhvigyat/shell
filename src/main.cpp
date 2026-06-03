@@ -39,7 +39,7 @@ int main()
     {
       string str;
       getline(ss, str);
-      if (str == "type" || str == "echo" || str == "exit" || str == "pwd")
+      if (str == "type" || str == "echo" || str == "exit" || str == "pwd" || str == "cd")
       {
         cout << str << " " << "is a shell builtin" << endl;
       }
@@ -51,8 +51,23 @@ int main()
         }
       }
     }
-    else if (cmd=="pwd"){
-      cout<<filesystem::current_path().string()<<endl; 
+    else if (cmd == "pwd")
+    {
+      cout << filesystem::current_path().string() << endl;
+    }
+    else if (cmd == "cd")
+    {
+      string new_directory_path_string = filesystem::current_path().string() + s.substr(3);
+      filesystem::path new_directory_path(new_directory_path_string);
+
+      if (filesystem::exists(new_directory_path))
+      {
+        filesystem::current_path(new_directory_path);
+      }
+      else
+      {
+        cout << "cd: " << new_directory_path_string << ": " << "No such file or directory" << endl;
+      }
     }
     else
     {
