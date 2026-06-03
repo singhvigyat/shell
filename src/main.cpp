@@ -54,12 +54,12 @@ int main()
     else
     {
       // the first string would be the executable name, we called it cmd before, we reusing it.
-      // string exe_name = cmd;
-      // if (executable(exe_name, 0))
-      // {
-      //   system(s.c_str());
-      // }
-      cout << s << ": command not found" << endl;
+      string exe_name = cmd;
+      if (executable(exe_name, 0))
+      {
+        system(s.c_str());
+      }
+      // cout << s << ": command not found" << endl;
     }
   }
 }
