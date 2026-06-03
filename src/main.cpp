@@ -66,7 +66,6 @@ int main()
         
         if(ch){
           std::string path_to_home(ch); 
-          cout<<path_to_home<<endl; 
           filesystem::current_path(path_to_home); 
         }
       }
