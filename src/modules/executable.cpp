@@ -16,6 +16,12 @@ char separator = ':';
 
 bool executable(string &str, bool print_required)
 {
+    // keep this read only(do const char*ch), as this returns the memory owned by the environment, not by our program, so we won't be modifying this, directly, as its not safe.
+
+        // this we're not doing string = getenv("PATH") because it may return nullptr, & we can't do string of nullptr.
+
+        // char ch* -> points to same memory (no copy )
+        // string s -> points to different memory (its own copy)
     const char *ch = getenv("PATH");
 
     bool ba = false;
