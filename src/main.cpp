@@ -57,7 +57,7 @@ int main()
     }
     else if (cmd == "cd")
     {
-      string new_directory_path_string = filesystem::current_path().string() + s.substr(3);
+      string new_directory_path_string = s.substr(3);
       filesystem::path new_directory_path(new_directory_path_string);
 
       if (filesystem::exists(new_directory_path))
