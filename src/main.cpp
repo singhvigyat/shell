@@ -59,7 +59,8 @@ int main()
       {
         system(s.c_str());
       }
-      // cout << s << ": command not found" << endl;
+      else
+        cout << s << ": command not found" << endl;
     }
   }
 }
