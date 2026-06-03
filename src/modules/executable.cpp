@@ -9,15 +9,14 @@ using namespace std;
 // _WIN32 — a predefined compiler macro
 // The whole block — conditional compilation
 #ifdef _WIN32
-    char separator = ';'; 
-#else 
-    char separator = ':'; 
+char separator = ';';
+#else
+char separator = ':';
 #endif
 
-
-
-bool executable(const char*ch, string& str)
+bool executable(string &str, bool print_required)
 {
+    const char *ch = getenv("PATH");
 
     bool ba = false;
     if (ch)
@@ -29,13 +28,14 @@ bool executable(const char*ch, string& str)
         {
             filesystem::path p = dir;
             // joins str to p => p + str;
-            p /= str;   
+            p /= str;
             if (filesystem::exists(p))
             {
                 filesystem::perms permission = status(p).permissions();
                 if ((permission & filesystem::perms::owner_exec) != filesystem::perms::none)
                 {
-                    cout << str << " is " << p.string() << endl;
+                    if (print_required)
+                        cout << str << " is " << p.string() << endl;
                     ba = true;
                     break;
                 }

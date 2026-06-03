@@ -51,15 +51,21 @@ int main()
 
         // char ch* -> points to same memory (no copy )
         // string s -> points to different memory (its own copy)
-        const char *ch = getenv("PATH");
-
-        if (!executable(ch, str))
+        if (!executable(str, 0))
+        {
           cout << str << ": not found" << endl;
+        }
       }
     }
     else
     {
-      cout << s << ": command not found" << endl;
+      // the first string would be the executable name, we called it cmd before, we reusing it.
+      string exe_name = cmd;
+      if (executable(exe_name, 0))
+      {
+        system(s.c_str());
+      }
+      // cout << s << ": command not found" << endl;
     }
   }
 }

@@ -2,4 +2,4 @@
 #include <string>
 #include <iostream>
 
-bool executable(const char *ch, std::string &str);
+bool executable( std::string &str, bool print_required);
