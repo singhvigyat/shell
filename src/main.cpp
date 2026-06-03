@@ -58,15 +58,29 @@ int main()
     else if (cmd == "cd")
     {
       string new_directory_path_string = s.substr(3);
-      filesystem::path new_directory_path(new_directory_path_string);
 
-      if (filesystem::exists(new_directory_path))
+      if (new_directory_path_string == "~")
       {
-        filesystem::current_path(new_directory_path);
+        //go to the home directory 
+        const char*ch = getenv("HOME"); 
+        
+        if(ch){
+          std::string path_to_home(ch); 
+          cout<<path_to_home<<endl; 
+          filesystem::current_path(path_to_home); 
+        }
       }
       else
       {
-        cout << "cd: " << s.substr(3) << ": " << "No such file or directory" << endl;
+        filesystem::path new_directory_path(new_directory_path_string);
+        if (filesystem::exists(new_directory_path))
+        {
+          filesystem::current_path(new_directory_path);
+        }
+        else
+        {
+          cout << "cd: " << s.substr(3) << ": " << "No such file or directory" << endl;
+        }
       }
     }
     else
