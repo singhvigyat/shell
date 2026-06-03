@@ -51,6 +51,9 @@ int main()
         }
       }
     }
+    else if (cmd=="pwd"){
+      cout<<filesystem::current_path().string()<<endl; 
+    }
     else
     {
       // the first string would be the executable name, we called it cmd before, we reusing it.
