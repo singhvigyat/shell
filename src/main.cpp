@@ -2,19 +2,9 @@
 #include <string>
 #include <sstream>
 #include <filesystem>
+#include "modules/executable.hpp"
 using namespace std;
-namespace filesystem = std::filesystem; 
-
-// #ifdef, #else, #endif — preprocessor directives
-// _WIN32 — a predefined compiler macro
-// The whole block — conditional compilation
-#ifdef _WIN32
-    char separator = ';'; 
-#else 
-    char separator = ':'; 
-#endif
-
-
+namespace filesystem = std::filesystem;
 
 int main()
 {
@@ -63,34 +53,7 @@ int main()
         // string s -> points to different memory (its own copy)
         const char *ch = getenv("PATH");
 
-        bool ba = false;
-        if (ch)
-        {
-          // string PATH(ch);
-          // processing the string;
-          stringstream ss(ch);
-          string dir;
-          // cout << "PATH = " << getenv("PATH") << endl;
-          while (getline(ss, dir, separator))
-          {
-            filesystem::path p = dir;
-            // joins str to p => p + str;
-            p /= str;
-            if (filesystem::exists(p))
-            {
-              filesystem::perms permission = status(p).permissions();
-              if ((permission & filesystem::perms::owner_exec) != filesystem::perms::none)
-              {
-                cout << str << " is " << p.string() << endl;
-                ba = true;
-                break;
-              }
-            }
-
-            // cout << dir << endl;
-          }
-        }
-        if (!ba)
+        if (!executable(ch, str))
           cout << str << ": not found" << endl;
       }
     }
