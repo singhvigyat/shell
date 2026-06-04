@@ -54,63 +54,44 @@ bool executable(string &str, bool print_required)
     return ba;
 }
 
-std::string normalize_string(std::string &s)
+
+std::vector<std::string> tokenize(std::string &s)
 {
-    size_t start = 0;
-    size_t end = s.size();
 
-    // why use isspace over s[i]== ' '
-    // because isspace gives true for other things like \n, \t also.
-    while (start < s.size() && std::isspace(static_cast<unsigned char>(s[start])))
-    {
-        ++start;
-    }
-
-    while (end > start && std::isspace(static_cast<unsigned char>(s[end - 1])))
-    {
-        --end;
-    }
-
-    // got the right & left part trimmed.
-    s = s.substr(start, end - start);
-    // if (!s.empty()&&s[0] == '\'' && s[s.size() - 1] == '\'')
-    // {
-    //     // cout<<s[start]<<" "<<s[end-1]<<endl;
-    //     // cout<<"here"<<endl;
-    //     return s;
-    // }
-
-    bool last_space = 0;
-    std::string res;
-
+    vector<string> separated_args;
     bool isquoted = false;
+    std::string res;
 
     for (auto &ch : s)
     {
         if (ch == '\'')
         {
-        if(isquoted) last_space = false; 
-          isquoted = !isquoted; 
-        }else if(isquoted){
-            res.push_back(ch); 
+            isquoted = !isquoted;
+        }
+        else if (isquoted)
+        {
+            res.push_back(ch);
         }
         else
         {
             if (std::isspace(static_cast<unsigned char>(ch)))
             {
-                if (!last_space)
+                if (!isquoted && !res.empty())
                 {
-                    res.push_back(' ');
-                    last_space = true;
+                    separated_args.push_back(res);
+                    res.clear();
                 }
             }
             else
             {
                 res.push_back(ch);
-                last_space = false;
             }
         }
     }
 
-    return res;
+    if (!res.empty())
+    {
+        separated_args.push_back(res);
+    }
+    return separated_args;
 }

@@ -2,7 +2,9 @@
 #include <string>
 #include <sstream>
 #include <filesystem>
+#include <fstream>
 #include "modules/utils.hpp"
+
 using namespace std;
 namespace filesystem = std::filesystem;
 
@@ -27,22 +29,20 @@ int main()
     stringstream ss(s);
     string cmd;
     getline(ss, cmd, ' ');
+
     string str;
     getline(ss, str);
 
     // condition checking
     if (cmd == "echo")
-    {   
+    {
 
-      std:: string trimmed_input = normalize_string(str); 
-      
-      stringstream ss(trimmed_input); 
-      std:: string individual ;
-      while(getline(ss, individual, '\'')){
-        cout<<individual; 
+      vector<string> tokenized_input = tokenize(str);
+      for (auto &i : tokenized_input)
+      {
+        cout << i << " ";
       }
-      cout<<endl; 
-      
+      cout << endl;
     }
     else if (cmd == "type")
     {
@@ -70,12 +70,13 @@ int main()
 
       if (new_directory_path_string == "~")
       {
-        //go to the home directory 
-        const char*ch = getenv("HOME"); 
-        
-        if(ch){
-          std::string path_to_home(ch); 
-          filesystem::current_path(path_to_home); 
+        // go to the home directory
+        const char *ch = getenv("HOME");
+
+        if (ch)
+        {
+          std::string path_to_home(ch);
+          filesystem::current_path(path_to_home);
         }
       }
       else
@@ -88,6 +89,21 @@ int main()
         else
         {
           cout << "cd: " << s.substr(3) << ": " << "No such file or directory" << endl;
+        }
+      }
+    }
+    else if (cmd == "cat")
+    {
+      std::string input_file = (str);
+
+      std::vector<std::string> tokenized_input = tokenize(input_file);
+
+      for (auto &file : tokenized_input)
+      {
+        std::ifstream fin(file);
+        if (fin)
+        {
+          std::cout << fin.rdbuf();
         }
       }
     }
