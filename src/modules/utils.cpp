@@ -54,44 +54,50 @@ bool executable(string &str, bool print_required)
     return ba;
 }
 
-
 std::vector<std::string> tokenize(std::string &s)
 {
-
     vector<string> separated_args;
-    bool isquoted = false;
     std::string res;
+    char quote = '\0';
 
     for (auto &ch : s)
     {
-        if (ch == '\'')
+        if (quote == '\0')
         {
-            isquoted = !isquoted;
-        }
-        else if (isquoted)
-        {
-            res.push_back(ch);
-        }
-        else
-        {
-            if (std::isspace(static_cast<unsigned char>(ch)))
+            if (ch == '\'' || ch == '"')
             {
-                if (!isquoted && !res.empty())
-                {
-                    separated_args.push_back(res);
-                    res.clear();
-                }
+                quote = ch;
             }
             else
             {
-                res.push_back(ch);
+                if (std::isspace(static_cast<unsigned char>(ch)))
+                {
+                    if (quote == '\0' && !res.empty())
+                    {
+                        separated_args.push_back(res);
+                        res.clear();
+                    }
+                }
+                else
+                {
+                    res.push_back(ch);
+                }
             }
         }
+        else if (quote == ch)
+        {
+            quote = '\0';
+        }
+        else
+            res.push_back(ch);
     }
 
     if (!res.empty())
-    {
-        separated_args.push_back(res);
-    }
+{
+    separated_args.push_back(res);
+}
+
+    
+
     return separated_args;
 }

@@ -36,7 +36,6 @@ int main()
     // condition checking
     if (cmd == "echo")
     {
-
       vector<string> tokenized_input = tokenize(str);
       for (auto &i : tokenized_input)
       {
