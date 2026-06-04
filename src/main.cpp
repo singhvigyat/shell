@@ -2,7 +2,7 @@
 #include <string>
 #include <sstream>
 #include <filesystem>
-#include "modules/executable.hpp"
+#include "modules/utils.hpp"
 using namespace std;
 namespace filesystem = std::filesystem;
 
@@ -27,18 +27,27 @@ int main()
     stringstream ss(s);
     string cmd;
     getline(ss, cmd, ' ');
+    string str;
+    getline(ss, str);
 
     // condition checking
     if (cmd == "echo")
-    {
-      string str;
-      getline(ss, str);
-      cout << str << endl;
+    {   
+
+      std:: string trimmed_input = normalize_string(str); 
+      
+      stringstream ss(trimmed_input); 
+      std:: string individual ;
+      while(getline(ss, individual, '\'')){
+        cout<<individual; 
+      }
+      cout<<endl; 
+      
     }
     else if (cmd == "type")
     {
-      string str;
-      getline(ss, str);
+      // string str;
+      // getline(ss, str);
       if (str == "type" || str == "echo" || str == "exit" || str == "pwd" || str == "cd")
       {
         cout << str << " " << "is a shell builtin" << endl;
