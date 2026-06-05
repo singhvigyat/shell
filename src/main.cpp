@@ -14,8 +14,6 @@ int main()
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
 
-  // TODO: Uncomment the code below to pass the first stage
-
   while (true)
   {
     std::cout << "$ ";
@@ -97,9 +95,13 @@ int main()
     }
     else if (cmd == "cat")
     {
-      std::string input_file = (str);
+      // std::string input_file = (str);
 
-      std::vector<std::string> tokenized_input = tokenize(input_file);
+      std::vector<std::string> tokenized_input;
+      for (size_t i = 1; i < input.size(); i++)
+      {
+        tokenized_input.push_back(input[i]);
+      }
 
       for (auto &file : tokenized_input)
       {
