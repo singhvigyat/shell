@@ -26,12 +26,21 @@ int main()
       break;
     }
 
-    stringstream ss(s);
-    string cmd;
-    getline(ss, cmd, ' ');
+    // tokenize the user input, to get the first executalbe name correctly, if the user is passing the name of the executable in quotes.
+    std::vector<std::string> input = tokenize(s);
 
+    // stringstream ss(s);
+    string cmd;
+    // getline(ss, cmd, ' ');
+    cmd = input[0];
     string str;
-    getline(ss, str);
+    for (size_t i = 1; i < input.size(); i++)
+    {
+      str.append(input[i]);
+      if (i != input.size() - 1)
+        str.push_back(' ');
+    }
+    // getline(ss, str);
 
     // condition checking
     if (cmd == "echo")
@@ -110,9 +119,15 @@ int main()
     {
       // the first string would be the executable name, we called it cmd before, we reusing it.
       string exe_name = cmd;
+
+      // create a system() compatible command, which will have "" dquotes, around the exe file name, along with the arguments after that. 
+      string to_execute_command = "\"" + exe_name + "\"" + " "+ str;
+      // cout<<to_execute_command<<endl;
+      // cout << exe_name << endl;
+      // cout << str << endl;
       if (executable(exe_name, 0))
       {
-        system(s.c_str());
+        system(to_execute_command.c_str());
       }
       else
         cout << s << ": command not found" << endl;
