@@ -59,14 +59,23 @@ std::vector<std::string> tokenize(std::string &s)
     vector<string> separated_args;
     std::string res;
     char quote = '\0';
+    bool back_slash = false;
 
     for (auto &ch : s)
     {
         if (quote == '\0')
         {
-            if (ch == '\'' || ch == '"')
+            if(back_slash){
+                res.push_back(ch); 
+                back_slash =false; 
+            }
+            else if (ch == '\'' || ch == '"')
             {
                 quote = ch;
+            }
+            else if (ch == '\\')
+            {
+                back_slash = true;
             }
             else
             {
@@ -93,11 +102,9 @@ std::vector<std::string> tokenize(std::string &s)
     }
 
     if (!res.empty())
-{
-    separated_args.push_back(res);
-}
-
-    
+    {
+        separated_args.push_back(res);
+    }
 
     return separated_args;
 }
