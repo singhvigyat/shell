@@ -14,7 +14,7 @@ char separator = ';';
 char separator = ':';
 #endif
 
-// check the file has execute permissions or not. 
+// check the file has execute permissions or not.
 bool executable(string &str, bool print_required)
 {
     // keep this read only(do const char*ch), as this returns the memory owned by the environment, not by our program, so we won't be modifying this, directly, as its not safe.
@@ -24,7 +24,7 @@ bool executable(string &str, bool print_required)
     // char ch* -> points to same memory (no copy )
     // string s -> points to different memory (its own copy)
     const char *ch = getenv("PATH");
-
+    
     bool ba = false;
     if (ch)
     {
@@ -55,7 +55,7 @@ bool executable(string &str, bool print_required)
     return ba;
 }
 
-// tokenize a string into multiple tokens 
+// tokenize a string into multiple tokens
 std::vector<std::string> tokenize(std::string &s)
 {
     vector<string> separated_args;
@@ -115,8 +115,9 @@ std::vector<std::string> tokenize(std::string &s)
             if (quote == '"' && ch == '\\')
             {
                 back_slash = true;
-            }else
-            res.push_back(ch);
+            }
+            else
+                res.push_back(ch);
         }
     }
 
