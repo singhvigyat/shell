@@ -45,12 +45,7 @@ int main()
     // condition checking
     if (cmd == "echo")
     {
-      vector<string> tokenized_input = tokenize(str);
-      for (auto &i : tokenized_input)
-      {
-        cout << i << " ";
-      }
-      cout << endl;
+      cout << str << endl;
     }
     else if (cmd == "type")
     {
@@ -119,21 +114,20 @@ int main()
     {
       // the first string would be the executable name, we called it cmd before, we reusing it.
       string exe_name = cmd;
-      // cout<<cmd<<endl; 
-      // for treating already present double quotes in the existing .exe file name. 
-      for(size_t i = 0;i<exe_name.size();++i){
-        if(exe_name[i]=='"'){
-          exe_name.replace(i, 1, "\\\""); 
-          i+=1; 
+
+      // for treating already present double quotes in the existing .exe file name.
+      for (size_t i = 0; i < exe_name.size(); ++i)
+      {
+        if (exe_name[i] == '"')
+        {
+          exe_name.replace(i, 1, "\\\"");
+          i += 1;
         }
       }
-      // cout<<" after processing"<<endl; 
-      //  cout << exe_name << endl;
 
-      // create a system() compatible command, which will have "" dquotes, around the exe file name, along with the arguments after that. 
-      string to_execute_command = "\"" + exe_name + "\"" + " "+ str;
-      // cout<<to_execute_command<<endl;
-      // cout << str << endl;
+      // create a system() compatible command, which will have "" dquotes, around the exe file name, along with the arguments after that.
+      string to_execute_command = "\"" + exe_name + "\"" + " " + str;
+
       if (executable(cmd, 0))
       {
         system(to_execute_command.c_str());

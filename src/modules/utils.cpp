@@ -24,7 +24,7 @@ bool executable(string &str, bool print_required)
     // char ch* -> points to same memory (no copy )
     // string s -> points to different memory (its own copy)
     const char *ch = getenv("PATH");
-    
+
     bool ba = false;
     if (ch)
     {
@@ -77,12 +77,7 @@ std::vector<std::string> tokenize(std::string &s)
         }
         if (quote == '\0')
         {
-            if (back_slash)
-            {
-                res.push_back(ch);
-                back_slash = false;
-            }
-            else if (ch == '\'' || ch == '"')
+            if (ch == '\'' || ch == '"')
             {
                 quote = ch;
             }
@@ -120,7 +115,6 @@ std::vector<std::string> tokenize(std::string &s)
                 res.push_back(ch);
         }
     }
-
     if (!res.empty())
     {
         separated_args.push_back(res);
