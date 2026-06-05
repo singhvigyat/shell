@@ -63,11 +63,22 @@ std::vector<std::string> tokenize(std::string &s)
 
     for (auto &ch : s)
     {
+        if (back_slash)
+        {
+            if (quote == '"' && ch != '\\' && ch != '"' && ch != '$' && ch != '`')
+            {
+                res.push_back('\\');
+            }
+            res.push_back(ch);
+            back_slash = false;
+            continue;
+        }
         if (quote == '\0')
         {
-            if(back_slash){
-                res.push_back(ch); 
-                back_slash =false; 
+            if (back_slash)
+            {
+                res.push_back(ch);
+                back_slash = false;
             }
             else if (ch == '\'' || ch == '"')
             {
@@ -98,7 +109,13 @@ std::vector<std::string> tokenize(std::string &s)
             quote = '\0';
         }
         else
+        {
+            if (quote == '"' && ch == '\\')
+            {
+                back_slash = true;
+            }else
             res.push_back(ch);
+        }
     }
 
     if (!res.empty())
