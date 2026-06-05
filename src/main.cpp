@@ -120,6 +120,15 @@ int main()
       // the first string would be the executable name, we called it cmd before, we reusing it.
       string exe_name = cmd;
 
+      // for treating already present double quotes in the existing .exe file name. 
+      for(size_t i = 0;i<exe_name.size();++i){
+        if(exe_name[i]=='"'){
+          exe_name.replace(i, 1, "\\\""); 
+          i+=1; 
+        }
+      }
+
+      cout<<exe_name<<endl; 
       // create a system() compatible command, which will have "" dquotes, around the exe file name, along with the arguments after that. 
       string to_execute_command = "\"" + exe_name + "\"" + " "+ str;
       // cout<<to_execute_command<<endl;
