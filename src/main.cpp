@@ -128,7 +128,7 @@ int main()
         }
       }
 
-      cout<<exe_name<<endl; 
+      // cout<<exe_name<<endl; 
       // create a system() compatible command, which will have "" dquotes, around the exe file name, along with the arguments after that. 
       string to_execute_command = "\"" + exe_name + "\"" + " "+ str;
       // cout<<to_execute_command<<endl;
