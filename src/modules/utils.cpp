@@ -77,7 +77,31 @@ std::vector<std::string> tokenize(std::string &s)
         }
         if (quote == '\0')
         {
-            if (ch == '\'' || ch == '"')
+            if (ch == '>')
+            {
+                if (!res.empty()&&res[0]=='1'&&res.size()==1)
+                {
+                    separated_args.push_back("1>"); 
+                    res.clear(); 
+                }
+                else
+                {
+
+                    if (!res.empty())
+                    {
+                        separated_args.push_back(res);
+                        res.clear();
+                    }
+                    if (!separated_args.empty() && separated_args.back() == ">")
+                    {
+                        separated_args.back() = ">>";
+                    }
+                    else
+                        separated_args.push_back(">");
+                }
+                continue;
+            }
+            else if (ch == '\'' || ch == '"')
             {
                 quote = ch;
             }

@@ -3,6 +3,7 @@
 #include <sstream>
 #include <filesystem>
 #include <fstream>
+#include <windows.h>
 #include "modules/utils.hpp"
 
 using namespace std;
@@ -43,7 +44,58 @@ int main()
     // condition checking
     if (cmd == "echo")
     {
-      cout << str << endl;
+
+      bool redirect_operator = false;
+      std::string output_file;
+      std::string to_write_input;
+
+      for (size_t i = 1; i < input.size(); ++i)
+      {
+        if (input[i] == ">" || input[i] == "1>")
+        {
+          redirect_operator = true;
+        }
+        if (input[i - 1] == ">" || input[i - 1] == "1>")
+        {
+          output_file = input[i];
+        }
+        if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>"))
+        {
+          if (i > 1)
+            to_write_input.push_back(' ');
+          to_write_input.append(input[i]);
+        }
+      }
+
+      if (redirect_operator)
+      {
+        // Open or create a file handle
+        // first arg => LPCSTR -> long pointer const string (const char*)
+        HANDLE hFile = CreateFileA(output_file.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+        if (hFile == INVALID_HANDLE_VALUE)
+        {
+          std::cerr << "Error opening file handle." << std::endl;
+          return 1;
+        }
+
+        const char *data = to_write_input.c_str();
+        // DWORD => double word, 32 bits (bytes = 8 bits, word = 16 bits)
+        DWORD byteswritten = 0;
+
+        // Use the Win32 WriteFile function
+        // BOOL -> defined in windows, way before cpp's bool var
+        BOOL result = WriteFile(hFile, data, strlen(data), &byteswritten, NULL);
+
+        if (!result)
+        {
+          std::cerr << "WriteFile failed. Error code: " << GetLastError() << std::endl;
+        }
+
+        CloseHandle(hFile); // Clean up the handle
+      }
+      else
+        cout << str << endl;
     }
     else if (cmd == "type")
     {
@@ -95,22 +147,70 @@ int main()
     }
     else if (cmd == "cat")
     {
-      // std::string input_file = (str);
 
-      std::vector<std::string> tokenized_input;
-      for (size_t i = 1; i < input.size(); i++)
-      {
-        tokenized_input.push_back(input[i]);
-      }
+      bool redirect_operator = false;
+      std::string output_file_arg;
+      std::vector<std::string> input_files;
 
-      for (auto &file : tokenized_input)
+      for (size_t i = 1; i < input.size(); ++i)
       {
-        std::ifstream fin(file);
-        if (fin)
+        if (input[i] == ">" || input[i] == "1>")
         {
-          std::cout << fin.rdbuf();
+          redirect_operator = true;
+        }
+        if (input[i - 1] == ">" || input[i - 1] == "1>")
+        {
+          output_file_arg = input[i];
+        }
+        if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>"))
+        {
+          input_files.push_back(input[i]);
         }
       }
+
+      if (redirect_operator)
+      {
+        char buffer[4096];
+        DWORD bytesRead, bytesWritten;
+
+        HANDLE output_file = CreateFileA(output_file_arg.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+        for (auto &file : input_files)
+        {
+          HANDLE input_file = CreateFileA(file.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL,
+                                          OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+          if (input_file == INVALID_HANDLE_VALUE)
+          {
+            std::cout << "cat: " << file << ": " << "No such file or directory\n";
+            break;
+          }
+
+          while (ReadFile(input_file, buffer, sizeof(buffer), &bytesRead, NULL) && bytesRead > 0)
+          {
+            WriteFile(output_file, buffer, bytesRead, &bytesWritten, NULL);
+          }
+          CloseHandle(input_file);
+        }
+
+        CloseHandle(output_file);
+      }
+      else
+      {
+        for (size_t file = 1; file < input.size(); ++file)
+        {
+          std::ifstream fin(input[file]);
+          if (fin)
+          {
+            std::cout << fin.rdbuf();
+          }
+          else
+          {
+            // std::cerr << "cat: " << input[file] << ": No such file or directory\n";
+          }
+        }
+      }
+      // cout << endl;
     }
     else
     {
