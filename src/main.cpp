@@ -212,6 +212,27 @@ int main()
       }
       // cout << endl;
     }
+    else if (cmd == "ls")
+    {
+      // A structure filled by Windows is WIN32_FIND_DATAA
+      WIN32_FIND_DATAA findData;
+      HANDLE hFind = FindFirstFileA(str.append("\\*").c_str(), &findData);
+
+      if (hFind != INVALID_HANDLE_VALUE)
+      {
+        do
+        {
+          // hiding the '.' & '..' files (which means current & parent location)
+          // so using strcmp (returns 0 if strings are equal),
+          // using strcmp -> because this is used to compare const *char, these are not strings.
+          if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0)
+            continue;
+          std::cout << findData.cFileName << '\n';
+        } while (FindNextFileA(hFind, &findData));
+
+        FindClose(hFind);
+      }
+    }
     else
     {
       // the first string would be the executable name, we called it cmd before, we reusing it.
