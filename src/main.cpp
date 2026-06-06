@@ -267,6 +267,7 @@ int main()
       bool redirect_operator = false;
       std::string output_file_arg;
       std::vector<std::string> input_files;
+      bool flag_one_per_line = false;
 
       for (size_t i = 1; i < input.size(); ++i)
       {
@@ -280,7 +281,19 @@ int main()
         }
         if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>"))
         {
-          input_files.push_back(input[i]);
+          if (input[i] == "-1")
+          {
+            flag_one_per_line = true;
+          }
+          else if (!input[i].empty() && input[i][0] == '-')
+          {
+            // Safely ignore any other flags (like -a, -l) so they aren't treated as folders
+            continue;
+          }
+          else
+          {
+            input_files.push_back(input[i]);
+          }
         }
       }
 
@@ -388,7 +401,21 @@ int main()
           {
             for (const auto &entry : std::filesystem::directory_iterator(dir))
             {
-              std::cout << entry.path().filename().string() << "\n";
+              if (flag_one_per_line)
+              {
+                std::cout << entry.path().filename().string() << "\n";
+              }
+              else
+              {
+                // Two spaces is standard for horizontal terminal output
+                std::cout << entry.path().filename().string() << "  ";
+              }
+            }
+
+            // Print a final newline if we printed horizontally
+            if (!flag_one_per_line)
+            {
+              std::cout << "\n";
             }
           }
           catch (const std::filesystem::filesystem_error &e)
@@ -397,32 +424,31 @@ int main()
           }
         }
       }
-    
-  }
-  else
-  {
-    // the first string would be the executable name, we called it cmd before, we reusing it.
-    string exe_name = cmd;
-
-    // for treating already present double quotes in the existing .exe file name.
-    for (size_t i = 0; i < exe_name.size(); ++i)
-    {
-      if (exe_name[i] == '"')
-      {
-        exe_name.replace(i, 1, "\\\"");
-        i += 1;
-      }
-    }
-
-    // create a system() compatible command, which will have "" dquotes, around the exe file name, along with the arguments after that.
-    string to_execute_command = "\"" + exe_name + "\"" + " " + str;
-
-    if (executable(cmd, 0))
-    {
-      system(to_execute_command.c_str());
     }
     else
-      cout << s << ": command not found" << endl;
+    {
+      // the first string would be the executable name, we called it cmd before, we reusing it.
+      string exe_name = cmd;
+
+      // for treating already present double quotes in the existing .exe file name.
+      for (size_t i = 0; i < exe_name.size(); ++i)
+      {
+        if (exe_name[i] == '"')
+        {
+          exe_name.replace(i, 1, "\\\"");
+          i += 1;
+        }
+      }
+
+      // create a system() compatible command, which will have "" dquotes, around the exe file name, along with the arguments after that.
+      string to_execute_command = "\"" + exe_name + "\"" + " " + str;
+
+      if (executable(cmd, 0))
+      {
+        system(to_execute_command.c_str());
+      }
+      else
+        cout << s << ": command not found" << endl;
+    }
   }
-}
 }
