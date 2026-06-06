@@ -183,7 +183,7 @@ int main()
           if (input_file == INVALID_HANDLE_VALUE)
           {
             std::cout << "cat: " << file << ": " << "No such file or directory\n";
-            break;
+            continue;
           }
 
           while (ReadFile(input_file, buffer, sizeof(buffer), &bytesRead, NULL) && bytesRead > 0)
@@ -216,21 +216,94 @@ int main()
     {
       // A structure filled by Windows is WIN32_FIND_DATAA
       WIN32_FIND_DATAA findData;
-      HANDLE hFind = FindFirstFileA(str.append("\\*").c_str(), &findData);
+      bool redirect_operator = false;
+      std::string output_file_arg;
+      std::vector<std::string> input_files;
 
-      if (hFind != INVALID_HANDLE_VALUE)
+      for (size_t i = 1; i < input.size(); ++i)
       {
-        do
+        if (input[i] == ">" || input[i] == "1>")
         {
-          // hiding the '.' & '..' files (which means current & parent location)
-          // so using strcmp (returns 0 if strings are equal),
-          // using strcmp -> because this is used to compare const *char, these are not strings.
-          if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0)
-            continue;
-          std::cout << findData.cFileName << '\n';
-        } while (FindNextFileA(hFind, &findData));
+          redirect_operator = true;
+        }
+        if (input[i - 1] == ">" || input[i - 1] == "1>")
+        {
+          output_file_arg = input[i];
+        }
+        if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>"))
+        {
+          input_files.push_back(input[i]);
+        }
+      }
+      if (redirect_operator)
+      {
 
-        FindClose(hFind);
+        HANDLE output_file = CreateFileA(output_file_arg.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+        if (output_file == INVALID_HANDLE_VALUE)
+        {
+          std::cerr << "Cannot open output file\n";
+          continue;
+        }
+
+        for (auto &file : input_files)
+        {
+          std::string pattern = file + "\\*";
+          HANDLE hFind = FindFirstFileA(pattern.c_str(), &findData);
+
+          if (hFind == INVALID_HANDLE_VALUE)
+          {
+            std::cerr
+                << "ls: cannot access "
+                << file
+                << '\n';
+          }
+
+          if (hFind != INVALID_HANDLE_VALUE)
+          {
+            do
+            {
+              if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0)
+                continue;
+
+              // write here to the output file.
+              const char *data = findData.cFileName;
+              DWORD byteswritten = 0;
+              BOOL result = WriteFile(output_file, data, strlen(data), &byteswritten, NULL);
+
+              // to append new line everytime
+              const char *nl = "\n";
+              WriteFile(output_file, nl, 1, &byteswritten, NULL);
+              if (!result)
+              {
+                std::cerr << "WriteFile failed. Error code: " << GetLastError() << std::endl;
+              }
+
+            } while (FindNextFileA(hFind, &findData));
+
+            FindClose(hFind);
+          }
+        }
+        CloseHandle(output_file);
+      }
+      else
+      {
+        HANDLE hFind = FindFirstFileA(str.append("\\*").c_str(), &findData);
+
+        if (hFind != INVALID_HANDLE_VALUE)
+        {
+          do
+          {
+            // hiding the '.' & '..' files (which means current & parent location)
+            // so using strcmp (returns 0 if strings are equal),
+            // using strcmp -> because this is used to compare const *char, these are not strings.
+            if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0)
+              continue;
+            std::cout << findData.cFileName << '\n';
+          } while (FindNextFileA(hFind, &findData));
+
+          FindClose(hFind);
+        }
       }
     }
     else
