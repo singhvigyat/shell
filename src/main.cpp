@@ -103,7 +103,7 @@ int main()
           std::cerr << "Error opening file." << std::endl;
           continue;
         }
-        hFile << to_write_input;
+        hFile << to_write_input<<"\n";
 
         if (hFile.fail())
         {
