@@ -3,6 +3,7 @@
 #include <sstream>
 #include <filesystem>
 #include <fstream>
+#include <algorithm>
 // #include <windows.h>
 #include "modules/utils.hpp"
 
@@ -164,7 +165,6 @@ int main()
     }
     else if (cmd == "cat")
     {
-
       bool redirect_operator = false;
       std::string output_file_arg;
       std::vector<std::string> input_files;
@@ -175,11 +175,11 @@ int main()
         {
           redirect_operator = true;
         }
-        if (input[i - 1] == ">" || input[i - 1] == "1>")
+        else if (input[i - 1] == ">" || input[i - 1] == "1>")
         {
           output_file_arg = input[i];
         }
-        if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>"))
+        else if (input[i] != ">" && input[i] != "1>")
         {
           input_files.push_back(input[i]);
         }
@@ -187,78 +187,47 @@ int main()
 
       if (redirect_operator)
       {
-
-        // WINDOWS ONLY CODE (LOW-LEVEL, WILL ONLY RUN ON WINDOW)
-        // char buffer[4096];
-        // DWORD bytesRead, bytesWritten;
-
-        // HANDLE output_file = CreateFileA(output_file_arg.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-
-        // for (auto &file : input_files)
-        // {
-        //   HANDLE input_file = CreateFileA(file.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL,
-        //                                   OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-
-        //   if (input_file == INVALID_HANDLE_VALUE)
-        //   {
-        //     std::cout << "cat: " << file << ": " << "No such file or directory\n";
-        //     continue;
-        //   }
-
-        //   while (ReadFile(input_file, buffer, sizeof(buffer), &bytesRead, NULL) && bytesRead > 0)
-        //   {
-        //     WriteFile(output_file, buffer, bytesRead, &bytesWritten, NULL);
-        //   }
-        //   CloseHandle(input_file);
-        // }
-
-        // CloseHandle(output_file);
-
         std::ofstream output_file(output_file_arg);
 
         if (!output_file.is_open())
         {
-          std::cerr << "Error opening output file.\n";
+          // Codecrafters standard error format for missing folders
+          std::cerr << "bash: " << output_file_arg << ": No such file or directory\n";
         }
         else
         {
-          for (auto &file : input_files)
+          for (const auto &file : input_files)
           {
-            // 2. Open each input file for reading
             std::ifstream input_file(file);
 
             if (!input_file.is_open())
             {
-              // Keeping your exact error message
               std::cout << "cat: " << file << ": No such file or directory\n";
-              break;
+              continue;
             }
 
-            // 3. High-level magic: Pipe the entire file buffer directly to the output file.
-            // This entirely replaces the 'while(ReadFile...)' 4KB buffer loop!
+            // HIGH-LEVEL CAT MAGIC: Pipes the whole file buffer directly
             output_file << input_file.rdbuf();
-
-            // input_file automatically closes here at the end of the loop
           }
-          // output_file automatically closes when it goes out of scope
         }
       }
-      else
+      else // Terminal Output
       {
-        for (size_t file = 1; file < input.size(); ++file)
+        // Using your parsed input_files vector here instead of raw input array
+        for (const auto &file : input_files)
         {
-          std::ifstream fin(input[file]);
+          std::ifstream fin(file);
           if (fin)
           {
             std::cout << fin.rdbuf();
           }
           else
           {
-            // std::cerr << "cat: " << input[file] << ": No such file or directory\n";
+            // Uncommented so Codecrafters doesn't fail you on missing files!
+            std::cerr << "cat: " << file << ": No such file or directory\n";
           }
         }
       }
-      // cout << endl;
     }
     else if (cmd == "ls")
     {
@@ -357,7 +326,7 @@ int main()
 
         if (!output_file.is_open())
         {
-          std::cerr << "Cannot open output file\n";
+          std::cerr << "bash: " << output_file_arg << ": No such file or directory\n";
           continue;
         }
 
@@ -365,10 +334,20 @@ int main()
         {
           try
           {
-            // High-level C++ directory iterator (automatically skips "." and "..")
+            // 1. Collect files
+            std::vector<std::string> sorted_files;
             for (const auto &entry : std::filesystem::directory_iterator(dir))
             {
-              output_file << entry.path().filename().string() << "\n";
+              sorted_files.push_back(entry.path().filename().string());
+            }
+
+            // 2. Sort alphabetically
+            std::sort(sorted_files.begin(), sorted_files.end());
+
+            // 3. Write to file
+            for (const auto &file : sorted_files)
+            {
+              output_file << file << "\n";
             }
           }
           catch (const std::filesystem::filesystem_error &e)
@@ -399,21 +378,30 @@ int main()
         {
           try
           {
+            // 1. Collect files
+            std::vector<std::string> sorted_files;
             for (const auto &entry : std::filesystem::directory_iterator(dir))
+            {
+              sorted_files.push_back(entry.path().filename().string());
+            }
+
+            // 2. Sort alphabetically
+            std::sort(sorted_files.begin(), sorted_files.end());
+
+            // 3. Print out
+            for (const auto &file : sorted_files)
             {
               if (flag_one_per_line)
               {
-                std::cout << entry.path().filename().string() << "\n";
+                std::cout << file << "\n";
               }
               else
               {
-                // Two spaces is standard for horizontal terminal output
-                std::cout << entry.path().filename().string() << "  ";
+                std::cout << file << "  ";
               }
             }
 
-            // Print a final newline if we printed horizontally
-            if (!flag_one_per_line)
+            if (!flag_one_per_line && !sorted_files.empty())
             {
               std::cout << "\n";
             }
