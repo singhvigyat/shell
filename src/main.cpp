@@ -295,11 +295,13 @@ int main()
         {
           stdout_append_operator = true;
         }
-        else if (input[i - 1] == ">" || input[i - 1] == "1>" || input[i - 1] == "2>" || input[i - 1] == "1>>")
+        else if (input[i - 1] == ">" || input[i - 1] == "1>" || input[i - 1] == "2>" || input[i - 1] == "1>>" || input[i - 1] == ">>")
         {
           output_file_arg = input[i];
         }
-        else if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>" && input[i - 1] != "2>" && input[i] != "2>" && input[i - 1] != "1>>" && input[i] != ">>"))
+        else if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>" && input[i - 1] != "2>" && input[i] != "2>" && input[i - 1] != "1>>" && input[i] != "1>>" && input[i - 1] != ">>" && input[i] != ">>"
+
+                                                              ))
         {
           if (input[i] == "-1")
           {
