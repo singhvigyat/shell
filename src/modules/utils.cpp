@@ -83,10 +83,12 @@ std::vector<std::string> tokenize(std::string &s)
                 {
                     separated_args.push_back("1>"); 
                     res.clear(); 
+                }else if(!res.empty()&&res[0]=='2'&&res.size()==1){
+                    separated_args.push_back("2>"); 
+                    res.clear(); 
                 }
                 else
                 {
-
                     if (!res.empty())
                     {
                         separated_args.push_back(res);

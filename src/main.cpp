@@ -46,64 +46,44 @@ int main()
     if (cmd == "echo")
     {
 
-      bool redirect_operator = false;
+      bool stdout_redirect_operator = false;
+      bool error_redirect_operator = false;
       std::string output_file;
       std::string to_write_input;
 
       for (size_t i = 1; i < input.size(); ++i)
       {
+        // cout << input[i] << endl;
         if (input[i] == ">" || input[i] == "1>")
         {
-          redirect_operator = true;
+          stdout_redirect_operator = true;
         }
-        if (input[i - 1] == ">" || input[i - 1] == "1>")
+        else if (input[i] == "2>")
+        {
+          error_redirect_operator = true;
+        }
+        else if (input[i - 1] == ">" || input[i - 1] == "1>" || input[i - 1] == "2>")
         {
           output_file = input[i];
         }
-        if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>"))
+       else if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>" && input[i - 1] != "2>"))
         {
           if (i > 1)
             to_write_input.push_back(' ');
           to_write_input.append(input[i]);
         }
       }
+      // cout << endl;
 
-      if (redirect_operator)
+      if (stdout_redirect_operator)
       {
-
-        // THIS IS THE WINDOWS ONLY CODE (LOW-LEVEL)
-        // // Open or create a file handle
-        // // first arg => LPCSTR -> long pointer const string (const char*)
-        // HANDLE hFile = CreateFileA(output_file.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-
-        // if (hFile == INVALID_HANDLE_VALUE)
-        // {
-        //   std::cerr << "Error opening file handle." << std::endl;
-        //   return 1;
-        // }
-
-        // const char *data = to_write_input.c_str();
-        // // DWORD => double word, 32 bits (bytes = 8 bits, word = 16 bits)
-        // DWORD byteswritten = 0;
-
-        // // Use the Win32 WriteFile function
-        // // BOOL -> defined in windows, way before cpp's bool var
-        // BOOL result = WriteFile(hFile, data, strlen(data), &byteswritten, NULL);
-
-        // if (!result)
-        // {
-        //   std::cerr << "WriteFile failed. Error code: " << GetLastError() << std::endl;
-        // }
-
-        // CloseHandle(hFile); // Clean up the handle
-
         std::ofstream hFile(output_file);
         if (!hFile.is_open())
         {
           std::cerr << "Error opening file." << std::endl;
           continue;
         }
-        hFile << to_write_input<<"\n";
+        hFile << to_write_input << "\n";
 
         if (hFile.fail())
         {
@@ -111,6 +91,10 @@ int main()
         }
 
         hFile.close();
+      }
+      else if (error_redirect_operator)
+      {
+        cout << to_write_input << endl;
       }
       else
         cout << str << endl;
@@ -165,7 +149,8 @@ int main()
     }
     else if (cmd == "cat")
     {
-      bool redirect_operator = false;
+      bool stdout_redirect_operator = false;
+      bool error_redirect_operator = false;
       std::string output_file_arg;
       std::vector<std::string> input_files;
 
@@ -173,19 +158,23 @@ int main()
       {
         if (input[i] == ">" || input[i] == "1>")
         {
-          redirect_operator = true;
+          stdout_redirect_operator = true;
         }
-        else if (input[i - 1] == ">" || input[i - 1] == "1>")
+        else if (input[i] == "2>")
+        {
+          error_redirect_operator = true;
+        }
+        else if (input[i - 1] == ">" || input[i - 1] == "1>" || input[i - 1] == "2>")
         {
           output_file_arg = input[i];
         }
-        else if (input[i] != ">" && input[i] != "1>")
+        else if (input[i] != ">" && input[i] != "1>" && input[i] != "2>")
         {
           input_files.push_back(input[i]);
         }
       }
 
-      if (redirect_operator)
+      if (stdout_redirect_operator)
       {
         std::ofstream output_file(output_file_arg);
 
@@ -211,6 +200,31 @@ int main()
           }
         }
       }
+      else if (error_redirect_operator)
+      {
+        // stderr output put in the file (in case of >2)
+        std::ofstream output_file(output_file_arg);
+        if (!output_file.is_open())
+        {
+          // Codecrafters standard error format for missing folders
+          std::cerr << "bash: " << output_file_arg << ": No such file or directory\n";
+        }
+        else
+        {
+          // std::ofstream out_file(file);
+          for (const auto &file : input_files)
+          {
+            std::ifstream in_file(file);
+
+            if (!in_file.is_open())
+            {
+              output_file << "cat: " << file << ": No such file or directory\n";
+              continue;
+            }
+            cout << in_file.rdbuf();
+          }
+        }
+      }
       else // Terminal Output
       {
         // Using your parsed input_files vector here instead of raw input array
@@ -233,7 +247,9 @@ int main()
     {
       // A structure filled by Windows is WIN32_FIND_DATAA
       // WIN32_FIND_DATAA findData;
-      bool redirect_operator = false;
+      bool stdout_redirect_operator = false;
+      bool error_redirect_operator = false;
+
       std::string output_file_arg;
       std::vector<std::string> input_files;
       bool flag_one_per_line = false;
@@ -242,13 +258,17 @@ int main()
       {
         if (input[i] == ">" || input[i] == "1>")
         {
-          redirect_operator = true;
+          stdout_redirect_operator = true;
         }
-        if (input[i - 1] == ">" || input[i - 1] == "1>")
+        else if (input[i] == "2>")
+        {
+          error_redirect_operator = true;
+        }
+        if (input[i - 1] == ">" || input[i - 1] == "1>" || input[i - 1] == "2>")
         {
           output_file_arg = input[i];
         }
-        if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>"))
+        if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>" && input[i] != "2>"))
         {
           if (input[i] == "-1")
           {
@@ -271,57 +291,8 @@ int main()
         input_files.push_back(".");
       }
 
-      if (redirect_operator)
+      if (stdout_redirect_operator)
       {
-
-        // HANDLE output_file = CreateFileA(output_file_arg.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-
-        // if (output_file == INVALID_HANDLE_VALUE)
-        // {
-        //   std::cerr << "Cannot open output file\n";
-        //   continue;
-        // }
-
-        // for (auto &file : input_files)
-        // {
-        //   std::string pattern = file + "\\*";
-        //   HANDLE hFind = FindFirstFileA(pattern.c_str(), &findData);
-
-        //   if (hFind == INVALID_HANDLE_VALUE)
-        //   {
-        //     std::cerr
-        //         << "ls: cannot access "
-        //         << file
-        //         << '\n';
-        //   }
-
-        //   if (hFind != INVALID_HANDLE_VALUE)
-        //   {
-        //     do
-        //     {
-        //       if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0)
-        //         continue;
-
-        //       // write here to the output file.
-        //       const char *data = findData.cFileName;
-        //       DWORD byteswritten = 0;
-        //       BOOL result = WriteFile(output_file, data, strlen(data), &byteswritten, NULL);
-
-        //       // to append new line everytime
-        //       const char *nl = "\n";
-        //       WriteFile(output_file, nl, 1, &byteswritten, NULL);
-        //       if (!result)
-        //       {
-        //         std::cerr << "WriteFile failed. Error code: " << GetLastError() << std::endl;
-        //       }
-
-        //     } while (FindNextFileA(hFind, &findData));
-
-        //     FindClose(hFind);
-        //   }
-        // }
-        // CloseHandle(output_file);
-
         std::ofstream output_file(output_file_arg);
 
         if (!output_file.is_open())
@@ -332,8 +303,13 @@ int main()
 
         for (const auto &dir : input_files)
         {
-          try
+          if (std::filesystem::is_regular_file(dir))
           {
+            output_file << dir << "\n";
+          }
+          else if (std::filesystem::is_directory(dir))
+          {
+
             // 1. Collect files
             std::vector<std::string> sorted_files;
             for (const auto &entry : std::filesystem::directory_iterator(dir))
@@ -350,34 +326,65 @@ int main()
               output_file << file << "\n";
             }
           }
-          catch (const std::filesystem::filesystem_error &e)
+          else
           {
             std::cerr << "ls: cannot access '" << dir << "': No such file or directory\n";
           }
         }
       }
-      else
+      else if (error_redirect_operator)
       {
-        // HANDLE hFind = FindFirstFileA(str.append("\\*").c_str(), &findData);
+        std::ofstream output_file(output_file_arg);
 
-        // if (hFind != INVALID_HANDLE_VALUE)
-        // {
-        //   do
-        //   {
-        //     // hiding the '.' & '..' files (which means current & parent location)
-        //     // so using strcmp (returns 0 if strings are equal),
-        //     // using strcmp -> because this is used to compare const *char, these are not strings.
-        //     if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0)
-        //       continue;
-        //     std::cout << findData.cFileName << '\n';
-        //   } while (FindNextFileA(hFind, &findData));
-
-        //   FindClose(hFind);
+        if (!output_file.is_open())
+        {
+          std::cerr << "bash: " << output_file_arg << ": No such file or directory\n";
+          continue;
+        }
 
         for (const auto &dir : input_files)
         {
-          try
+          if (std::filesystem::is_regular_file(dir))
           {
+            cout << dir << "\n";
+          }
+          else if (std::filesystem::is_directory(dir))
+          {
+
+            // 1. Collect files
+            std::vector<std::string> sorted_files;
+            for (const auto &entry : std::filesystem::directory_iterator(dir))
+            {
+              sorted_files.push_back(entry.path().filename().string());
+            }
+
+            // 2. Sort alphabetically
+            std::sort(sorted_files.begin(), sorted_files.end());
+
+            // 3. Write to file
+            for (const auto &file : sorted_files)
+            {
+              cout << file << "\n";
+            }
+          }
+          else
+          {
+            output_file << "ls: " << dir << ": No such file or directory\n";
+          }
+        }
+      }
+      else
+      {
+
+        for (const auto &dir : input_files)
+        {
+          if (std::filesystem::is_regular_file(dir))
+          {
+            cout << dir << "\n";
+          }
+          else if (std::filesystem::is_directory(dir))
+          {
+
             // 1. Collect files
             std::vector<std::string> sorted_files;
             for (const auto &entry : std::filesystem::directory_iterator(dir))
@@ -406,9 +413,10 @@ int main()
               std::cout << "\n";
             }
           }
-          catch (const std::filesystem::filesystem_error &e)
+          else
           {
-            std::cerr << "ls: cannot access '" << dir << "': No such file or directory\n";
+
+            std::cerr << "ls: cannot access " << dir << ": No such file or directory\n";
           }
         }
       }
