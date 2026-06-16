@@ -94,6 +94,12 @@ int main()
       }
       else if (error_redirect_operator)
       {
+        std::ofstream hFile(output_file);
+        if (!hFile.is_open())
+        {
+          std::cerr << "Error opening file." << std::endl;
+          continue;
+        }
         cout << to_write_input << endl;
       }
       else
