@@ -45,7 +45,6 @@ int main()
     // condition checking
     if (cmd == "echo")
     {
-
       bool stdout_redirect_operator = false;
       bool error_redirect_operator = false;
       bool stdout_append_operator = false;
@@ -62,15 +61,15 @@ int main()
         {
           error_redirect_operator = true;
         }
-        else if (input[i] == ">>")
+        else if (input[i] == ">>" || input[i] == "1>>")
         {
           stdout_append_operator = true;
         }
-        else if (input[i - 1] == ">" || input[i - 1] == "1>" || input[i - 1] == "2>" || input[i - 1] == ">>")
+        else if (input[i - 1] == ">" || input[i - 1] == "1>" || input[i - 1] == "2>" || input[i - 1] == "1>>" || input[i - 1] == ">>")
         {
           output_file = input[i];
         }
-        else if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>" && input[i - 1] != "2>" && input[i - 1] != ">>"))
+        else if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>" && input[i - 1] != "2>" && input[i - 1] != "1>>" && input[i] != ">>"))
         {
           if (i > 1)
             to_write_input.push_back(' ');
@@ -292,15 +291,15 @@ int main()
         {
           error_redirect_operator = true;
         }
-        else if (input[i] == ">>")
+        else if (input[i] == ">>" || input[i] == "1>>")
         {
           stdout_append_operator = true;
         }
-        else if (input[i - 1] == ">" || input[i - 1] == "1>" || input[i - 1] == "2>" || input[i - 1] == ">>")
+        else if (input[i - 1] == ">" || input[i - 1] == "1>" || input[i - 1] == "2>" || input[i - 1] == "1>>")
         {
           output_file_arg = input[i];
         }
-        else if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>" && input[i - 1] != "2>" && input[i] != "2>" && input[i - 1] != ">>" && input[i] != ">>"))
+        else if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>" && input[i - 1] != "2>" && input[i] != "2>" && input[i - 1] != "1>>" && input[i] != ">>"))
         {
           if (input[i] == "-1")
           {
