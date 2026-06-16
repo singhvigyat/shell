@@ -48,12 +48,12 @@ int main()
 
       bool stdout_redirect_operator = false;
       bool error_redirect_operator = false;
+      bool stdout_append_operator = false;
       std::string output_file;
       std::string to_write_input;
 
       for (size_t i = 1; i < input.size(); ++i)
       {
-        // cout << input[i] << endl;
         if (input[i] == ">" || input[i] == "1>")
         {
           stdout_redirect_operator = true;
@@ -62,18 +62,21 @@ int main()
         {
           error_redirect_operator = true;
         }
-        else if (input[i - 1] == ">" || input[i - 1] == "1>" || input[i - 1] == "2>")
+        else if (input[i] == ">>")
+        {
+          stdout_append_operator = true;
+        }
+        else if (input[i - 1] == ">" || input[i - 1] == "1>" || input[i - 1] == "2>" || input[i - 1] == ">>")
         {
           output_file = input[i];
         }
-       else if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>" && input[i - 1] != "2>"))
+        else if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>" && input[i - 1] != "2>" && input[i - 1] != ">>"))
         {
           if (i > 1)
             to_write_input.push_back(' ');
           to_write_input.append(input[i]);
         }
       }
-      // cout << endl;
 
       if (stdout_redirect_operator)
       {
@@ -101,6 +104,23 @@ int main()
           continue;
         }
         cout << to_write_input << endl;
+      }
+      else if (stdout_append_operator)
+      {
+        std::ofstream hFile(output_file, std::ios::app);
+        if (!hFile.is_open())
+        {
+          std::cerr << "Error opening file." << std::endl;
+          continue;
+        }
+        hFile << to_write_input << "\n";
+
+        if (hFile.fail())
+        {
+          std::cerr << "Write failed." << std::endl;
+        }
+
+        hFile.close();
       }
       else
         cout << str << endl;
@@ -157,6 +177,7 @@ int main()
     {
       bool stdout_redirect_operator = false;
       bool error_redirect_operator = false;
+
       std::string output_file_arg;
       std::vector<std::string> input_files;
 
@@ -255,6 +276,7 @@ int main()
       // WIN32_FIND_DATAA findData;
       bool stdout_redirect_operator = false;
       bool error_redirect_operator = false;
+      bool stdout_append_operator = false;
 
       std::string output_file_arg;
       std::vector<std::string> input_files;
@@ -270,11 +292,15 @@ int main()
         {
           error_redirect_operator = true;
         }
-        else if (input[i - 1] == ">" || input[i - 1] == "1>" || input[i - 1] == "2>")
+        else if (input[i] == ">>")
+        {
+          stdout_append_operator = true;
+        }
+        else if (input[i - 1] == ">" || input[i - 1] == "1>" || input[i - 1] == "2>" || input[i - 1] == ">>")
         {
           output_file_arg = input[i];
         }
-        else if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>" && input[i] != "2>"))
+        else if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>" && input[i] != "2>" && input[i] != ">>"))
         {
           if (input[i] == "-1")
           {
@@ -379,9 +405,49 @@ int main()
           }
         }
       }
+      else if (stdout_append_operator)
+      {
+        std::ofstream output_file(output_file_arg, std::ios::app);
+
+        if (!output_file.is_open())
+        {
+          std::cerr << "bash: " << output_file_arg << ": No such file or directory\n";
+          continue;
+        }
+
+        for (const auto &dir : input_files)
+        {
+          if (std::filesystem::is_regular_file(dir))
+          {
+            cout << dir << "\n";
+          }
+          else if (std::filesystem::is_directory(dir))
+          {
+
+            // 1. Collect files
+            std::vector<std::string> sorted_files;
+            for (const auto &entry : std::filesystem::directory_iterator(dir))
+            {
+              sorted_files.push_back(entry.path().filename().string());
+            }
+
+            // 2. Sort alphabetically
+            std::sort(sorted_files.begin(), sorted_files.end());
+
+            // 3. Write to file
+            for (const auto &file : sorted_files)
+            {
+              cout << file << "\n";
+            }
+          }
+          else
+          {
+            output_file << "ls: " << dir << ": No such file or directory\n";
+          }
+        }
+      }
       else
       {
-
         for (const auto &dir : input_files)
         {
           if (std::filesystem::is_regular_file(dir))
