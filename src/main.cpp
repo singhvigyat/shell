@@ -264,11 +264,11 @@ int main()
         {
           error_redirect_operator = true;
         }
-        if (input[i - 1] == ">" || input[i - 1] == "1>" || input[i - 1] == "2>")
+        else if (input[i - 1] == ">" || input[i - 1] == "1>" || input[i - 1] == "2>")
         {
           output_file_arg = input[i];
         }
-        if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>" && input[i] != "2>"))
+        else if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>" && input[i] != "2>"))
         {
           if (input[i] == "-1")
           {
@@ -416,7 +416,7 @@ int main()
           else
           {
 
-            std::cerr << "ls: cannot access " << dir << ": No such file or directory\n";
+            std::cerr << "ls: " << dir << ": No such file or directory\n";
           }
         }
       }
