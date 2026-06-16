@@ -300,7 +300,7 @@ int main()
         {
           output_file_arg = input[i];
         }
-        else if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>" && input[i] != "2>" && input[i] != ">>"))
+        else if ((input[i - 1] != ">" && input[i] != ">") && (input[i - 1] != "1>" && input[i] != "1>" && input[i - 1] != "2>" && input[i] != "2>" && input[i - 1] != ">>" && input[i] != ">>"))
         {
           if (input[i] == "-1")
           {
@@ -360,7 +360,7 @@ int main()
           }
           else
           {
-            std::cerr << "ls: cannot access '" << dir << "': No such file or directory\n";
+            std::cerr << "ls: " << dir << ": No such file or directory\n";
           }
         }
       }
@@ -419,7 +419,8 @@ int main()
         {
           if (std::filesystem::is_regular_file(dir))
           {
-            cout << dir << "\n";
+            output_file << dir << "\n";
+            // cout << dir << "\n";
           }
           else if (std::filesystem::is_directory(dir))
           {
@@ -437,12 +438,12 @@ int main()
             // 3. Write to file
             for (const auto &file : sorted_files)
             {
-              cout << file << "\n";
+              output_file << file << "\n";
             }
           }
           else
           {
-            output_file << "ls: " << dir << ": No such file or directory\n";
+            std::cerr << "ls: " << dir << ": No such file or directory\n";
           }
         }
       }
