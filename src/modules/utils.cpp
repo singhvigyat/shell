@@ -99,6 +99,8 @@ std::vector<std::string> tokenize(std::string &s)
                         separated_args.back() = ">>";
                     }else if(!separated_args.empty()&&separated_args.back()=="1>"){
                         separated_args.back() = "1>>"; 
+                    }else if(!separated_args.empty()&&separated_args.back()=="2>"){
+                        separated_args.back() = "2>>"; 
                     }
                     else
                         separated_args.push_back(">");
