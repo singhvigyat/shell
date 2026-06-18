@@ -83,9 +83,10 @@ std::string readLine()
             {
               std::string name_of_file = p.filename().string();
               std::string remaining = name_of_file.substr(buffer.size());
-
+              remaining.push_back(' ');
               write(STDOUT_FILENO, remaining.c_str(), remaining.size());
               buffer = name_of_file;
+
               isExecutableFile = true;
               break;
             }
@@ -103,6 +104,7 @@ std::string readLine()
             {
               std::string name_of_file = name;
               std::string remaining = name_of_file.substr(buffer.size());
+              remaining.push_back(' ');
               write(STDOUT_FILENO, remaining.c_str(), remaining.size());
               buffer = name_of_file;
               isExecutableFile = true;
