@@ -14,3 +14,6 @@ Program instantly receives e
 No need to press Enter.
 
 We'll restore these settings, & trun the canonical mode ON, because without that terminal remains broken after program exits. 
+
+# WHY USE WRITE & NOT COUT ? IN THIS LIBRARY ? 
+Ans -> No hard constraint, Most of the time you'll see no difference, but for terminal editors and shells, people prefer the lower-level API because it gives precise control.

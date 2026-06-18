@@ -1048,3 +1048,4 @@ vcpkg_installed
 
 
 ./src/main
+./src/docs.txt

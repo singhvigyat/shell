@@ -34,6 +34,7 @@ std::string readLine()
   char c;
   while (read(STDIN_FILENO, &c, 1) == 1)
   {
+    bool isbuiltin = false; 
     if (c == '\t')
     {
    for (auto &cmd : commands)
@@ -41,7 +42,7 @@ std::string readLine()
         if (cmd.starts_with(buffer))
         {
           string remaining = cmd.substr(buffer.size());
-
+          isbuiltin = true; 
           write(STDOUT_FILENO,
                 remaining.c_str(),
                 remaining.size());
@@ -49,6 +50,9 @@ std::string readLine()
           buffer =cmd; 
           break; 
         }
+      }
+      if(!isbuiltin){         
+        write(STDOUT_FILENO, "\a", 1); 
       }
     }
     else if (c == '\n')
