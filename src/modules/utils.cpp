@@ -79,13 +79,15 @@ std::vector<std::string> tokenize(std::string &s)
         {
             if (ch == '>')
             {
-                if (!res.empty()&&res[0]=='1'&&res.size()==1)
+                if (!res.empty() && res[0] == '1' && res.size() == 1)
                 {
-                    separated_args.push_back("1>"); 
-                    res.clear(); 
-                }else if(!res.empty()&&res[0]=='2'&&res.size()==1){
-                    separated_args.push_back("2>"); 
-                    res.clear(); 
+                    separated_args.push_back("1>");
+                    res.clear();
+                }
+                else if (!res.empty() && res[0] == '2' && res.size() == 1)
+                {
+                    separated_args.push_back("2>");
+                    res.clear();
                 }
                 else
                 {
@@ -97,10 +99,14 @@ std::vector<std::string> tokenize(std::string &s)
                     if (!separated_args.empty() && separated_args.back() == ">")
                     {
                         separated_args.back() = ">>";
-                    }else if(!separated_args.empty()&&separated_args.back()=="1>"){
-                        separated_args.back() = "1>>"; 
-                    }else if(!separated_args.empty()&&separated_args.back()=="2>"){
-                        separated_args.back() = "2>>"; 
+                    }
+                    else if (!separated_args.empty() && separated_args.back() == "1>")
+                    {
+                        separated_args.back() = "1>>";
+                    }
+                    else if (!separated_args.empty() && separated_args.back() == "2>")
+                    {
+                        separated_args.back() = "2>>";
                     }
                     else
                         separated_args.push_back(">");
@@ -151,4 +157,31 @@ std::vector<std::string> tokenize(std::string &s)
     }
 
     return separated_args;
+}
+
+const std::string WHITESPACE = " \n\r\t\f\v";
+// Trim from the start (left trim)
+void ltrim(std::string &s)
+{
+    size_t start = s.find_first_not_of(WHITESPACE);
+    s.erase(0, start);
+}
+
+void rtrim(std::string &s)
+{
+    size_t end = s.find_last_not_of(WHITESPACE);
+    if (end != std::string::npos)
+    {
+        s.erase(end + 1);
+    }
+    else
+    {
+        s.clear(); // String is entirely whitespace
+    }
+}
+
+void trim(std::string &s)
+{
+    ltrim(s);
+    rtrim(s);
 }

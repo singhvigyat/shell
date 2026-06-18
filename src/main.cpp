@@ -29,7 +29,7 @@ void disableRawMode()
 
 std::string readLine()
 {
-  vector<string> commands = {"echo ", "exit", "pwd", "type"};
+  vector<string> commands = {"echo ", "exit ", "pwd ", "type "};
   std::string buffer;
   char c;
   while (read(STDIN_FILENO, &c, 1) == 1)
@@ -90,6 +90,8 @@ int main()
   {
     write(STDOUT_FILENO, "$ ", 2);
     std::string s = readLine();
+    // doing the left right trimming
+    trim(s); 
     if (s == "exit")
     {
       break;
