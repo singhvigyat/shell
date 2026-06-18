@@ -4,11 +4,78 @@
 #include <filesystem>
 #include <fstream>
 #include <algorithm>
-// #include <windows.h>
+#include <termios.h>
+#include <unistd.h>
 #include "modules/utils.hpp"
 
 using namespace std;
 namespace filesystem = std::filesystem;
+
+struct termios old, raw; // for storing terminal's old & raw/modified settings
+
+void enableRawMode()
+{
+  struct termios raw;
+  tcgetattr(STDIN_FILENO, &old);
+  raw = old;
+  raw.c_lflag &= ~(ICANON | ECHO); // disable canonical mode & echo
+  tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
+
+void disableRawMode()
+{
+  tcsetattr(STDIN_FILENO, TCSAFLUSH, &old);
+}
+
+std::string readLine()
+{
+  vector<string> commands = {"echo ", "exit", "pwd", "type"};
+  std::string buffer;
+  char c;
+  while (read(STDIN_FILENO, &c, 1) == 1)
+  {
+    if (c == '\t')
+    {
+   for (auto &cmd : commands)
+      {
+        if (cmd.starts_with(buffer))
+        {
+          string remaining = cmd.substr(buffer.size());
+
+          write(STDOUT_FILENO,
+                remaining.c_str(),
+                remaining.size());
+
+          buffer =cmd; 
+          break; 
+        }
+      }
+    }
+    else if (c == '\n')
+    {
+      write(STDOUT_FILENO, "\n", 1);
+      break;
+    }
+    else if (c == 127)
+    {
+      // backspace
+      if (!buffer.empty())
+      {
+        buffer.pop_back();
+        write(STDOUT_FILENO, "\b \b", 3);
+        // "\b"-> go one step back(move pointer to left)
+        // " " -> replace by blank space
+        // "\b" -> again move one step back
+      }
+    }
+    else
+    {
+      buffer += c;
+      write(STDOUT_FILENO, &c, 1);
+    }
+  }
+  return buffer;
+}
 
 int main()
 {
@@ -16,11 +83,13 @@ int main()
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
 
+  enableRawMode();
+  atexit(disableRawMode);
+
   while (true)
   {
-    std::cout << "$ ";
-    std::string s;
-    std::getline(cin, s);
+    write(STDOUT_FILENO, "$ ", 2);
+    std::string s = readLine();
     if (s == "exit")
     {
       break;

@@ -1,0 +1,16 @@
+IN <TERMIOS.H>
+
+Normally:
+User types: h e l l o
+Program receives nothing
+until Enter is pressed.
+This is called canonical mode.
+
+When you disable it:
+User types: h
+Program instantly receives h
+User types: e
+Program instantly receives e
+No need to press Enter.
+
+We'll restore these settings, & trun the canonical mode ON, because without that terminal remains broken after program exits. 
