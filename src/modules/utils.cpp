@@ -8,11 +8,12 @@ using namespace std;
 // #ifdef, #else, #endif — preprocessor directives
 // _WIN32 — a predefined compiler macro
 // The whole block — conditional compilation
-#ifdef _WIN32
-char separator = ';';
-#else
-char separator = ':';
-#endif
+// #ifdef _WIN32
+// char separator = ';';
+// #else
+// char separator = ':';
+// #endif
+
 
 // check the file has execute permissions or not.
 bool executable(string &str, bool print_required)
@@ -184,4 +185,15 @@ void trim(std::string &s)
 {
     ltrim(s);
     rtrim(s);
+}
+
+
+bool is_executable(const std::filesystem::path& p) {
+    if (!filesystem::is_regular_file(p)) return false;
+#if defined(_WIN32)
+    return p.extension() == ".exe";
+#else
+    auto perms = filesystem::status(p).permissions();
+    return (perms & (filesystem::perms::owner_exec | filesystem::perms::group_exec | filesystem::perms::others_exec)) != filesystem::perms::none;
+#endif
 }

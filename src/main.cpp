@@ -11,6 +11,12 @@
 using namespace std;
 namespace filesystem = std::filesystem;
 
+#ifdef _WIN32
+char separator = ';';
+#else
+char separator = ':';
+#endif
+
 struct termios old, raw; // for storing terminal's old & raw/modified settings
 
 void enableRawMode()
@@ -29,30 +35,88 @@ void disableRawMode()
 
 std::string readLine()
 {
-  vector<string> commands = {"echo ", "exit ", "pwd ", "type "};
+  vector<string> builtin_commands = {"echo ", "exit ", "pwd ", "type "};
   std::string buffer;
   char c;
   while (read(STDIN_FILENO, &c, 1) == 1)
   {
-    bool isbuiltin = false; 
+    bool isbuiltin = false;
     if (c == '\t')
     {
-   for (auto &cmd : commands)
+
+      // check for builtin_commands
+      for (auto &cmd : builtin_commands)
       {
         if (cmd.starts_with(buffer))
         {
           string remaining = cmd.substr(buffer.size());
-          isbuiltin = true; 
+          isbuiltin = true;
           write(STDOUT_FILENO,
                 remaining.c_str(),
                 remaining.size());
 
-          buffer =cmd; 
-          break; 
+          buffer = cmd;
+          break;
         }
       }
-      if(!isbuiltin){         
-        write(STDOUT_FILENO, "\a", 1); 
+      if (isbuiltin)
+        continue;
+
+      // check for executables in $PATH variable
+      const char *ch = getenv("PATH");
+      bool isExecutableFile = false;
+      if (ch)
+      {
+        // process the string
+        stringstream ss(ch);
+        string dir;
+        while (getline(ss, dir, separator))
+        {
+          if (dir.empty())
+            continue;
+
+          // 1. check if its a file itself
+          filesystem::path p = dir;
+          if (filesystem::is_regular_file(p))
+          {
+            if (is_executable(p) && p.filename().string().starts_with(buffer))
+            {
+              std::string name_of_file = p.filename().string();
+              std::string remaining = name_of_file.substr(buffer.size());
+
+              write(STDOUT_FILENO, remaining.c_str(), remaining.size());
+              buffer = name_of_file;
+              isExecutableFile = true;
+              break;
+            }
+          }
+
+          // 2. check if its a directory, check inside that directory, to find that executable.
+          std::error_code ec;
+          for (const auto &entry : filesystem::directory_iterator(dir, ec))
+          {
+            if (ec)
+              break;
+            std::string name =
+                entry.path().filename().string();
+            if (is_executable(entry) && name.starts_with(buffer))
+            {
+              std::string name_of_file = name;
+              std::string remaining = name_of_file.substr(buffer.size());
+              write(STDOUT_FILENO, remaining.c_str(), remaining.size());
+              buffer = name_of_file;
+              isExecutableFile = true;
+              break;
+            }
+          }
+
+          if (isExecutableFile)
+            break;
+        }
+      }
+      if (!isbuiltin && !isExecutableFile)
+      {
+        write(STDOUT_FILENO, "\a", 1);
       }
     }
     else if (c == '\n')
@@ -95,7 +159,7 @@ int main()
     write(STDOUT_FILENO, "$ ", 2);
     std::string s = readLine();
     // doing the left right trimming
-    trim(s); 
+    trim(s);
     if (s == "exit")
     {
       break;
