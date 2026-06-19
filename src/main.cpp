@@ -5,6 +5,7 @@
 #include <fstream>
 #include <algorithm>
 #include <termios.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include "modules/utils.hpp"
 
@@ -35,36 +36,36 @@ void disableRawMode()
 
 std::string readLine()
 {
-  vector<string> builtin_commands = {"echo ", "exit ", "pwd ", "type "};
   std::string buffer;
   char c;
+  char prev_c;
   while (read(STDIN_FILENO, &c, 1) == 1)
   {
-    bool isbuiltin = false;
+    // check for builtin_commands
+    // bool isbuiltin = false;
+    vector<string> builtin_commands = {"echo", "exit", "pwd", "type"};
     if (c == '\t')
     {
-
-      // check for builtin_commands
+      std::vector<std::string> matches;
       for (auto &cmd : builtin_commands)
       {
         if (cmd.starts_with(buffer))
         {
-          string remaining = cmd.substr(buffer.size());
-          isbuiltin = true;
-          write(STDOUT_FILENO,
-                remaining.c_str(),
-                remaining.size());
+          // string remaining = cmd.substr(buffer.size());
+          matches.push_back(cmd);
+          // isbuiltin = true;
+          // write(STDOUT_FILENO,
+          //       remaining.c_str(),
+          //       remaining.size());
 
-          buffer = cmd;
-          break;
+          // buffer = cmd;
+          // break;
         }
       }
-      if (isbuiltin)
-        continue;
 
       // check for executables in $PATH variable
       const char *ch = getenv("PATH");
-      bool isExecutableFile = false;
+      // bool isExecutableFile = false;
       if (ch)
       {
         // process the string
@@ -82,13 +83,14 @@ std::string readLine()
             if (is_executable(p) && p.filename().string().starts_with(buffer))
             {
               std::string name_of_file = p.filename().string();
-              std::string remaining = name_of_file.substr(buffer.size());
-              remaining.push_back(' ');
-              write(STDOUT_FILENO, remaining.c_str(), remaining.size());
-              buffer = name_of_file;
-
-              isExecutableFile = true;
-              break;
+              matches.push_back(name_of_file);
+              // std::string remaining = name_of_file.substr(buffer.size());
+              // remaining.push_back(' ');
+              // write(STDOUT_FILENO, remaining.c_str(), remaining.size());
+              // buffer = name_of_file;
+              // buffer.push_back(' ');
+              // isExecutableFile = true;
+              // break;
             }
           }
 
@@ -103,22 +105,58 @@ std::string readLine()
             if (is_executable(entry) && name.starts_with(buffer))
             {
               std::string name_of_file = name;
-              std::string remaining = name_of_file.substr(buffer.size());
-              remaining.push_back(' ');
-              write(STDOUT_FILENO, remaining.c_str(), remaining.size());
-              buffer = name_of_file;
-              isExecutableFile = true;
-              break;
+              matches.push_back(name_of_file);
+              // std::string remaining = name_of_file.substr(buffer.size());
+              // remaining.push_back(' ');
+              // write(STDOUT_FILENO, remaining.c_str(), remaining.size());
+              // buffer = name_of_file;
+              // buffer.push_back(' ');
+
+              // isExecutableFile = true;
+              // break;
             }
           }
 
-          if (isExecutableFile)
-            break;
+          // if (isExecutableFile)
+          //   break;
         }
       }
-      if (!isbuiltin && !isExecutableFile)
+
+      sort(matches.begin(), matches.end());
+      matches.erase(
+          unique(matches.begin(), matches.end()),
+          matches.end());
+
+      if (matches.size() == 0)
       {
         write(STDOUT_FILENO, "\a", 1);
+      }
+      else if (matches.size() == 1)
+      {
+        std::string match = matches[0];
+        std::string remaining = match.substr(buffer.size());
+        remaining.push_back(' '); 
+        write(STDOUT_FILENO, remaining.c_str(), remaining.size());
+        buffer = match;
+        buffer.push_back(' ');
+      }
+      else if (matches.size() > 1)
+      {
+        if (prev_c != '\t')
+        {
+          write(STDOUT_FILENO, "\a", 1);
+        }
+        else
+        {
+          cout << "\n";
+
+          for (auto &i : matches)
+          {
+            cout << i << "  ";
+          }
+          write(STDOUT_FILENO, "\n$ ", 3);
+          write(STDOUT_FILENO, buffer.c_str(), buffer.size());
+        }
       }
     }
     else if (c == '\n')
@@ -143,6 +181,7 @@ std::string readLine()
       buffer += c;
       write(STDOUT_FILENO, &c, 1);
     }
+    prev_c = c;
   }
   return buffer;
 }
@@ -169,7 +208,6 @@ int main()
 
     // tokenize the user input, to get the first executalbe name correctly, if the user is passing the name of the executable in quotes.
     std::vector<std::string> input = tokenize(s);
-
     // stringstream ss(s);
     string cmd;
     // getline(ss, cmd, ' ');
@@ -739,15 +777,56 @@ int main()
         }
       }
 
+      // FOR USING SYSTEM()
       // create a system() compatible command, which will have "" dquotes, around the exe file name, along with the arguments after that.
-      string to_execute_command = "\"" + exe_name + "\"" + " " + str;
+      // string to_execute_command = "\"" + exe_name + "\"" + " " + str;
+
+      // pid > 0 → Parent process receives the child's PID.
+      // pid == 0 → Child process.
+      // pid < 0 → Fork failed.
 
       if (executable(cmd, 0))
       {
-        system(to_execute_command.c_str());
+
+        std::vector<char *> c_args;
+        c_args.reserve(input.size() + 1);
+
+        for (auto &i : input)
+        {
+          c_args.push_back(const_cast<char *>(i.c_str()));
+        }
+
+        // CRITICAL: The array MUST be null-terminated
+        c_args.push_back(nullptr);
+
+        // FOR USING FORK(),EXEC()
+        pid_t pid = fork();
+
+        if (pid == -1)
+        {
+          std::cerr << "Fork failed\n";
+        }
+        else if (pid == 0)
+        {
+          // Child process
+          execvp(c_args[0], c_args.data());
+
+          // If execvp returns, it must have failed
+          perror("execvp");
+          // after fork(), using exit() can flush buffered streams inherited from the parent, so use _exit() instead
+          _exit(1);
+        }
+        else
+        {
+          // Parent process (the shell)
+          int status;
+          waitpid(pid, &status, 0); // Wait for the child to finish
+        }
       }
       else
+      {
         cout << s << ": command not found" << endl;
+      }
     }
   }
 }
