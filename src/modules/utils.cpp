@@ -197,3 +197,16 @@ bool is_executable(const std::filesystem::path& p) {
     return (perms & (filesystem::perms::owner_exec | filesystem::perms::group_exec | filesystem::perms::others_exec)) != filesystem::perms::none;
 #endif
 }
+
+std::string get_lcp(std::string s,const std::vector<std::string>&matches){
+    
+    for(const auto&i:matches){
+        while(!s.empty()&&!i.starts_with(s)){
+            s.pop_back(); 
+        }
+         if (s.empty())
+            break;
+    }
+    
+    return s; 
+}

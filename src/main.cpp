@@ -135,27 +135,41 @@ std::string readLine()
       {
         std::string match = matches[0];
         std::string remaining = match.substr(buffer.size());
-        remaining.push_back(' '); 
+        remaining.push_back(' ');
         write(STDOUT_FILENO, remaining.c_str(), remaining.size());
         buffer = match;
         buffer.push_back(' ');
       }
       else if (matches.size() > 1)
       {
-        if (prev_c != '\t')
+        string lcp = get_lcp(matches[0], matches);
+
+        if (lcp.size() > buffer.size())
         {
-          write(STDOUT_FILENO, "\a", 1);
+          std::string remaining = lcp.substr(buffer.size()); 
+          write(STDOUT_FILENO, remaining.c_str(), remaining.size()); 
+
+          buffer = lcp ; 
+          prev_c = '\0'; 
+
         }
         else
         {
-          cout << "\n";
-
-          for (auto &i : matches)
+          if (prev_c != '\t')
           {
-            cout << i << "  ";
+            write(STDOUT_FILENO, "\a", 1);
           }
-          write(STDOUT_FILENO, "\n$ ", 3);
-          write(STDOUT_FILENO, buffer.c_str(), buffer.size());
+          else
+          {
+            cout << "\n";
+
+            for (auto &i : matches)
+            {
+              cout << i << "  ";
+            }
+            write(STDOUT_FILENO, "\n$ ", 3);
+            write(STDOUT_FILENO, buffer.c_str(), buffer.size());
+          }
         }
       }
     }

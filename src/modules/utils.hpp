@@ -23,3 +23,5 @@ void trim(std::string &s) ;
 
 // Simplified executable check
 bool is_executable(const std::filesystem::path& entry) ; 
+
+std::string get_lcp(std::string s, const std::vector<std::string>&matches); 
