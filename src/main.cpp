@@ -43,49 +43,71 @@ std::string readLine()
   {
     // check for builtin_commands
     vector<string> builtin_commands = {"echo", "exit", "pwd", "type"};
-      if (c == '\t')
+    if (c == '\t')
+    {
+
+      vector<string> input = tokenize(buffer);
+
+      std::vector<std::string> matches;
+      if (input.size() > 1)
       {
+        string to_complete = input[input.size() - 1];
+        string dir;
+        string prefix;
 
-        vector<string> input = tokenize(buffer);
+        auto pos = to_complete.find_last_of('/');
 
-        std::vector<std::string> matches;
-        if (input.size() > 1)
+        if (pos == string::npos)
         {
-          string to_complete = input[input.size() - 1];
-          filesystem::path pwd = filesystem::current_path();
+          dir = ".";
+          prefix = to_complete;
+        }
+        else
+        {
+          dir = to_complete.substr(0, pos);
+          prefix = to_complete.substr(pos + 1);
+        }
+        filesystem::path location = dir;
+        // filesystem::current_path(location);
+        // cout<<location<<endl;
+        // filesystem::path pwd = filesystem::current_path();
 
-          for (const auto &entry : filesystem::directory_iterator(pwd))
+        if (!filesystem::exists(location) ||
+            !filesystem::is_directory(location))
+        {
+          continue; 
+        }
+        for (const auto &entry : filesystem::directory_iterator(dir))
+        {
+          if (entry.is_regular_file())
           {
-
-            if (entry.is_regular_file())
+            auto file_name = entry.path().filename().string();
+            if (file_name.starts_with(prefix))
             {
-              auto file_name = entry.path().filename().string();
-              if (file_name.starts_with(to_complete))
-              {
-                // cout << file_name << endl;
-                matches.push_back(file_name);
-              }
+              // cout << file_name << endl;
+              matches.push_back(file_name);
             }
           }
-
-          if (matches.size() == 1)
-          {
-            // directly complete it
-            string to_write = matches[0];
-            string remaining = to_write.substr(to_complete.size());
-            remaining.push_back(' ');
-            buffer.append(remaining);
-            write(STDOUT_FILENO, remaining.c_str(), remaining.size());
-          }
-          else if (matches.empty())
-          {
-          }
-          else
-          {
-            // one tab -> beep
-            // two tab -> list
-          }
         }
+
+        if (matches.size() == 1)
+        {
+          // directly complete it
+          string to_write = matches[0];
+          string remaining = to_write.substr(prefix.size());
+          remaining.push_back(' ');
+          buffer.append(remaining);
+          write(STDOUT_FILENO, remaining.c_str(), remaining.size());
+        }
+        else if (matches.empty())
+        {
+        }
+        else
+        {
+          // one tab -> beep
+          // two tab -> list
+        }
+      }
       else
       {
 
