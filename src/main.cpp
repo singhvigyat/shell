@@ -42,133 +42,166 @@ std::string readLine()
   while (read(STDIN_FILENO, &c, 1) == 1)
   {
     // check for builtin_commands
-    // bool isbuiltin = false;
     vector<string> builtin_commands = {"echo", "exit", "pwd", "type"};
-    if (c == '\t')
-    {
-      std::vector<std::string> matches;
-      for (auto &cmd : builtin_commands)
+      if (c == '\t')
       {
-        if (cmd.starts_with(buffer))
+
+        vector<string> input = tokenize(buffer);
+
+        std::vector<std::string> matches;
+        if (input.size() > 1)
         {
-          // string remaining = cmd.substr(buffer.size());
-          matches.push_back(cmd);
-          // isbuiltin = true;
-          // write(STDOUT_FILENO,
-          //       remaining.c_str(),
-          //       remaining.size());
+          string to_complete = input[input.size() - 1];
+          filesystem::path pwd = filesystem::current_path();
 
-          // buffer = cmd;
-          // break;
-        }
-      }
-
-      // check for executables in $PATH variable
-      const char *ch = getenv("PATH");
-      // bool isExecutableFile = false;
-      if (ch)
-      {
-        // process the string
-        stringstream ss(ch);
-        string dir;
-        while (getline(ss, dir, separator))
-        {
-          if (dir.empty())
-            continue;
-
-          // 1. check if its a file itself
-          filesystem::path p = dir;
-          if (filesystem::is_regular_file(p))
+          for (const auto &entry : filesystem::directory_iterator(pwd))
           {
-            if (is_executable(p) && p.filename().string().starts_with(buffer))
+
+            if (entry.is_regular_file())
             {
-              std::string name_of_file = p.filename().string();
-              matches.push_back(name_of_file);
-              // std::string remaining = name_of_file.substr(buffer.size());
-              // remaining.push_back(' ');
-              // write(STDOUT_FILENO, remaining.c_str(), remaining.size());
-              // buffer = name_of_file;
-              // buffer.push_back(' ');
-              // isExecutableFile = true;
-              // break;
+              auto file_name = entry.path().filename().string();
+              if (file_name.starts_with(to_complete))
+              {
+                // cout << file_name << endl;
+                matches.push_back(file_name);
+              }
             }
           }
 
-          // 2. check if its a directory, check inside that directory, to find that executable.
-          std::error_code ec;
-          for (const auto &entry : filesystem::directory_iterator(dir, ec))
+          if (matches.size() == 1)
           {
-            if (ec)
-              break;
-            std::string name =
-                entry.path().filename().string();
-            if (is_executable(entry) && name.starts_with(buffer))
-            {
-              std::string name_of_file = name;
-              matches.push_back(name_of_file);
-              // std::string remaining = name_of_file.substr(buffer.size());
-              // remaining.push_back(' ');
-              // write(STDOUT_FILENO, remaining.c_str(), remaining.size());
-              // buffer = name_of_file;
-              // buffer.push_back(' ');
-
-              // isExecutableFile = true;
-              // break;
-            }
+            // directly complete it
+            string to_write = matches[0];
+            string remaining = to_write.substr(to_complete.size());
+            remaining.push_back(' ');
+            buffer.append(remaining);
+            write(STDOUT_FILENO, remaining.c_str(), remaining.size());
           }
-
-          // if (isExecutableFile)
-          //   break;
-        }
-      }
-
-      sort(matches.begin(), matches.end());
-      matches.erase(
-          unique(matches.begin(), matches.end()),
-          matches.end());
-
-      if (matches.size() == 0)
-      {
-        write(STDOUT_FILENO, "\a", 1);
-      }
-      else if (matches.size() == 1)
-      {
-        std::string match = matches[0];
-        std::string remaining = match.substr(buffer.size());
-        remaining.push_back(' ');
-        write(STDOUT_FILENO, remaining.c_str(), remaining.size());
-        buffer = match;
-        buffer.push_back(' ');
-      }
-      else if (matches.size() > 1)
-      {
-        string lcp = get_lcp(matches[0], matches);
-
-        if (lcp.size() > buffer.size())
-        {
-          std::string remaining = lcp.substr(buffer.size()); 
-          write(STDOUT_FILENO, remaining.c_str(), remaining.size()); 
-
-          buffer = lcp ; 
-          prev_c = '\0'; 
-
-        }
-        else
-        {
-          if (prev_c != '\t')
+          else if (matches.empty())
           {
-            write(STDOUT_FILENO, "\a", 1);
           }
           else
           {
-            cout << "\n";
+            // one tab -> beep
+            // two tab -> list
+          }
+        }
+      else
+      {
 
-            for (auto &i : matches)
+        for (auto &cmd : builtin_commands)
+        {
+          if (cmd.starts_with(buffer))
+          {
+            matches.push_back(cmd);
+          }
+        }
+
+        // check for executables in $PATH variable
+        const char *ch = getenv("PATH");
+        if (ch)
+        {
+          // process the string
+          stringstream ss(ch);
+          string dir;
+          while (getline(ss, dir, separator))
+          {
+            if (dir.empty())
+              continue;
+
+            // 1. check if its a file itself
+            filesystem::path p = dir;
+            if (filesystem::is_regular_file(p))
             {
-              cout << i << "  ";
+              if (is_executable(p) && p.filename().string().starts_with(buffer))
+              {
+                std::string name_of_file = p.filename().string();
+                matches.push_back(name_of_file);
+                // std::string remaining = name_of_file.substr(buffer.size());
+                // remaining.push_back(' ');
+                // write(STDOUT_FILENO, remaining.c_str(), remaining.size());
+                // buffer = name_of_file;
+                // buffer.push_back(' ');
+                // isExecutableFile = true;
+                // break;
+              }
             }
-            write(STDOUT_FILENO, "\n$ ", 3);
-            write(STDOUT_FILENO, buffer.c_str(), buffer.size());
+
+            // 2. check if its a directory, check inside that directory, to find that executable.
+            std::error_code ec;
+            for (const auto &entry : filesystem::directory_iterator(dir, ec))
+            {
+              if (ec)
+                break;
+              std::string name =
+                  entry.path().filename().string();
+              if (is_executable(entry) && name.starts_with(buffer))
+              {
+                std::string name_of_file = name;
+                matches.push_back(name_of_file);
+                // std::string remaining = name_of_file.substr(buffer.size());
+                // remaining.push_back(' ');
+                // write(STDOUT_FILENO, remaining.c_str(), remaining.size());
+                // buffer = name_of_file;
+                // buffer.push_back(' ');
+
+                // isExecutableFile = true;
+                // break;
+              }
+            }
+
+            // if (isExecutableFile)
+            //   break;
+          }
+        }
+
+        sort(matches.begin(), matches.end());
+        matches.erase(
+            unique(matches.begin(), matches.end()),
+            matches.end());
+
+        if (matches.size() == 0)
+        {
+          write(STDOUT_FILENO, "\a", 1);
+        }
+        else if (matches.size() == 1)
+        {
+          std::string match = matches[0];
+          std::string remaining = match.substr(buffer.size());
+          remaining.push_back(' ');
+          write(STDOUT_FILENO, remaining.c_str(), remaining.size());
+          buffer = match;
+          buffer.push_back(' ');
+        }
+        else if (matches.size() > 1)
+        {
+          string lcp = get_lcp(matches[0], matches);
+
+          if (lcp.size() > buffer.size())
+          {
+            std::string remaining = lcp.substr(buffer.size());
+            write(STDOUT_FILENO, remaining.c_str(), remaining.size());
+
+            buffer = lcp;
+            prev_c = '\0';
+          }
+          else
+          {
+            if (prev_c != '\t')
+            {
+              write(STDOUT_FILENO, "\a", 1);
+            }
+            else
+            {
+              cout << "\n";
+
+              for (auto &i : matches)
+              {
+                cout << i << "  ";
+              }
+              write(STDOUT_FILENO, "\n$ ", 3);
+              write(STDOUT_FILENO, buffer.c_str(), buffer.size());
+            }
           }
         }
       }
