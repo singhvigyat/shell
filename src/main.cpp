@@ -49,9 +49,18 @@ std::string readLine()
       vector<string> input = tokenize(buffer);
 
       std::vector<std::string> matches;
-      if (input.size() > 1)
+      std::vector<std::string> directories_matches;
+      if (input.size() > 1 || ((input.size() == 1 && buffer.back() == ' ')))
       {
-        string to_complete = input[input.size() - 1];
+        string to_complete;
+        if (buffer.back() == ' ')
+        {
+          to_complete = "";
+        }
+        else
+        {
+          to_complete = input.back();
+        }
         string dir;
         string prefix;
 
@@ -67,26 +76,32 @@ std::string readLine()
           dir = to_complete.substr(0, pos);
           prefix = to_complete.substr(pos + 1);
         }
-        filesystem::path location = dir;
         // filesystem::current_path(location);
         // cout<<location<<endl;
         // filesystem::path pwd = filesystem::current_path();
+        // cout << "director is->" << dir << endl;
+        // cout << "prefix is ->" << prefix << endl;
 
-        if (!filesystem::exists(location) ||
-            !filesystem::is_directory(location))
+        if (!filesystem::exists(dir) ||
+            !filesystem::is_directory(dir))
         {
-          continue; 
+          continue;
         }
         for (const auto &entry : filesystem::directory_iterator(dir))
         {
+          auto file_name = entry.path().filename().string();
           if (entry.is_regular_file())
           {
-            auto file_name = entry.path().filename().string();
             if (file_name.starts_with(prefix))
             {
               // cout << file_name << endl;
               matches.push_back(file_name);
             }
+          }
+          else if (entry.is_directory())
+          {
+            if (file_name.starts_with(prefix))
+              directories_matches.push_back(file_name);
           }
         }
 
@@ -106,6 +121,22 @@ std::string readLine()
         {
           // one tab -> beep
           // two tab -> list
+        }
+
+        if (directories_matches.size() == 0)
+        {
+          // bell
+        }
+        else if (directories_matches.size() == 1)
+        {
+          string to_write = directories_matches[0];
+          string remaining = to_write.substr(prefix.size());
+          remaining.push_back('/');
+          buffer.append(remaining);
+          write(STDOUT_FILENO, remaining.c_str(), remaining.size());
+        }
+        else
+        {
         }
       }
       else
