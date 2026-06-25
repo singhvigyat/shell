@@ -430,7 +430,7 @@ int main()
     {
       // string str;
       // getline(ss, str);
-      if (str == "type" || str == "echo" || str == "exit" || str == "pwd" || str == "cd")
+      if (str == "type" || str == "echo" || str == "exit" || str == "pwd" || str == "cd" || str =="complete")
       {
         cout << str << " " << "is a shell builtin" << endl;
       }
