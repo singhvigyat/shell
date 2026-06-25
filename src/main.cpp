@@ -119,6 +119,17 @@ std::string readLine()
         {
           // std::vector<std::string> all_matches = matches;
           // all_matches.insert(all_matches.end(), directories_matches.begin(), directories_matches.end());
+          std::vector<std::pair<std::string, bool>> all_entries;
+          sort(all_entries.begin(), all_entries.end()); 
+          
+          for (const auto &i : matches)
+          {
+            all_entries.push_back({i, false});
+          }
+          for (const auto &i : directories_matches)
+          {
+            all_entries.push_back({i, true});
+          }
 
           // total> 1
           if (prev_c != '\t')
@@ -128,15 +139,12 @@ std::string readLine()
           else
           {
             write(STDOUT_FILENO, "\n", 1); // SECOND tab -> no beep, list instead
-            for (auto &m : matches)
+           
+            for (auto &[m, n] : all_entries)
             {
               write(STDOUT_FILENO, m.c_str(), m.size());
-              write(STDOUT_FILENO, "  ", 2);
-            }
-            for (auto &m : directories_matches)
-            {
-              write(STDOUT_FILENO, m.c_str(), m.size());
-              write(STDOUT_FILENO, "/", 1);
+              if (n)
+                write(STDOUT_FILENO, "/", 1);
               write(STDOUT_FILENO, "  ", 2);
             }
             write(STDOUT_FILENO, "\n$ ", 3);
