@@ -76,12 +76,6 @@ std::string readLine()
           dir = to_complete.substr(0, pos);
           prefix = to_complete.substr(pos + 1);
         }
-        // filesystem::current_path(location);
-        // cout<<location<<endl;
-        // filesystem::path pwd = filesystem::current_path();
-        // cout << "director is->" << dir << endl;
-        // cout << "prefix is ->" << prefix << endl;
-
         if (!filesystem::exists(dir) ||
             !filesystem::is_directory(dir))
         {
@@ -94,7 +88,6 @@ std::string readLine()
           {
             if (file_name.starts_with(prefix))
             {
-              // cout << file_name << endl;
               matches.push_back(file_name);
             }
           }
@@ -116,6 +109,7 @@ std::string readLine()
         }
         else if (matches.empty())
         {
+          write(STDOUT_FILENO, "\a", 1);
         }
         else
         {
@@ -126,6 +120,7 @@ std::string readLine()
         if (directories_matches.size() == 0)
         {
           // bell
+            write(STDOUT_FILENO, "\a", 1);
         }
         else if (directories_matches.size() == 1)
         {
@@ -170,13 +165,6 @@ std::string readLine()
               {
                 std::string name_of_file = p.filename().string();
                 matches.push_back(name_of_file);
-                // std::string remaining = name_of_file.substr(buffer.size());
-                // remaining.push_back(' ');
-                // write(STDOUT_FILENO, remaining.c_str(), remaining.size());
-                // buffer = name_of_file;
-                // buffer.push_back(' ');
-                // isExecutableFile = true;
-                // break;
               }
             }
 
@@ -192,19 +180,8 @@ std::string readLine()
               {
                 std::string name_of_file = name;
                 matches.push_back(name_of_file);
-                // std::string remaining = name_of_file.substr(buffer.size());
-                // remaining.push_back(' ');
-                // write(STDOUT_FILENO, remaining.c_str(), remaining.size());
-                // buffer = name_of_file;
-                // buffer.push_back(' ');
-
-                // isExecutableFile = true;
-                // break;
               }
             }
-
-            // if (isExecutableFile)
-            //   break;
           }
         }
 
