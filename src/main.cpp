@@ -113,14 +113,29 @@ std::string readLine()
         }
         else
         {
-          // one tab -> beep
-          // two tab -> list
-        }
 
+          if (prev_c != '\t')
+          {
+            // one tab -> beep
+            write(STDOUT_FILENO, "\a", 1);
+          }
+          else
+          {
+            // two tab -> list
+            write(STDOUT_FILENO, "\n", 1);
+            for (auto &i : matches)
+            {
+              write(STDOUT_FILENO, i.c_str(), i.size());
+              write(STDOUT_FILENO, " ", 1);
+            }
+            write(STDOUT_FILENO, "\n$ ", 3);
+            write(STDOUT_FILENO, buffer.c_str(), buffer.size());
+          }
+        }
         if (directories_matches.size() == 0)
         {
           // bell
-            write(STDOUT_FILENO, "\a", 1);
+          write(STDOUT_FILENO, "\a", 1);
         }
         else if (directories_matches.size() == 1)
         {
@@ -132,6 +147,21 @@ std::string readLine()
         }
         else
         {
+          if (prev_c != '\t')
+          {
+            write(STDOUT_FILENO, "\a", 1);
+          }
+          else
+          {
+            write(STDOUT_FILENO, "\n", 1);
+            for (auto &i : directories_matches)
+            {
+              write(STDOUT_FILENO, i.c_str(), i.size());
+              write(STDOUT_FILENO, " ", 1);
+            }
+            write(STDOUT_FILENO, "\n$ ", 3);
+            write(STDOUT_FILENO, buffer.c_str(), buffer.size());
+          }
         }
       }
       else
@@ -296,7 +326,6 @@ int main()
       if (i != input.size() - 1)
         str.push_back(' ');
     }
-    // getline(ss, str);
 
     // condition checking
     if (cmd == "echo")
