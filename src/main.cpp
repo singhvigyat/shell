@@ -120,8 +120,7 @@ std::string readLine()
           // std::vector<std::string> all_matches = matches;
           // all_matches.insert(all_matches.end(), directories_matches.begin(), directories_matches.end());
           std::vector<std::pair<std::string, bool>> all_entries;
-          sort(all_entries.begin(), all_entries.end()); 
-
+          vector<string> all_entries_string;
           for (const auto &i : matches)
           {
             all_entries.push_back({i, false});
@@ -131,27 +130,41 @@ std::string readLine()
             all_entries.push_back({i, true});
           }
 
-          // total> 1
-          if (prev_c != '\t')
+          sort(all_entries.begin(), all_entries.end());
+
+          for (auto &[name, is_dir] : all_entries)
+            all_entries_string.push_back(name);
+
+          string lcp = get_lcp(all_entries_string[0], all_entries_string);
+
+          if (lcp.size() > prefix.size())
           {
-            write(STDOUT_FILENO, "\a", 1); // FIRST tab on ambiguous match -> exactly one beep
+            string remaining = lcp.substr(prefix.size());
+            write(STDOUT_FILENO, remaining.c_str(), remaining.size());
+            buffer.append(remaining); 
           }
           else
           {
-            write(STDOUT_FILENO, "\n", 1); // SECOND tab -> no beep, list instead
-           
-            for (auto &[m, n] : all_entries)
+            if (prev_c != '\t')
             {
-              write(STDOUT_FILENO, m.c_str(), m.size());
-              if (n)
-                write(STDOUT_FILENO, "/", 1);
-              write(STDOUT_FILENO, "  ", 2);
+              write(STDOUT_FILENO, "\a", 1); // FIRST tab on ambiguous match -> exactly one beep
             }
-            write(STDOUT_FILENO, "\n$ ", 3);
-            write(STDOUT_FILENO, buffer.c_str(), buffer.size());
+            else
+            {
+              write(STDOUT_FILENO, "\n", 1); // SECOND tab -> no beep, list instead
+
+              for (auto &[m, n] : all_entries)
+              {
+                write(STDOUT_FILENO, m.c_str(), m.size());
+                if (n)
+                  write(STDOUT_FILENO, "/", 1);
+                write(STDOUT_FILENO, "  ", 2);
+              }
+              write(STDOUT_FILENO, "\n$ ", 3);
+              write(STDOUT_FILENO, buffer.c_str(), buffer.size());
+            }
           }
         }
-
       }
       else
       {
