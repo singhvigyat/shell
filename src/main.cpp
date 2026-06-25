@@ -112,13 +112,13 @@ std::string readLine()
           remaining.push_back(is_dir ? '/' : ' ');
           buffer.append(remaining);
           write(STDOUT_FILENO, remaining.c_str(), remaining.size());
-          prev_c = '\0'; 
-          continue; 
+          prev_c = '\0';
+          continue;
         }
         else
         {
-          std::vector<std::string> all_matches = matches;
-          all_matches.insert(all_matches.end(), directories_matches.begin(), directories_matches.end());
+          // std::vector<std::string> all_matches = matches;
+          // all_matches.insert(all_matches.end(), directories_matches.begin(), directories_matches.end());
 
           // total> 1
           if (prev_c != '\t')
@@ -128,9 +128,15 @@ std::string readLine()
           else
           {
             write(STDOUT_FILENO, "\n", 1); // SECOND tab -> no beep, list instead
-            for (auto &m : all_matches)
+            for (auto &m : matches)
             {
               write(STDOUT_FILENO, m.c_str(), m.size());
+              write(STDOUT_FILENO, "  ", 2);
+            }
+            for (auto &m : directories_matches)
+            {
+              write(STDOUT_FILENO, m.c_str(), m.size());
+              write(STDOUT_FILENO, "/", 1);
               write(STDOUT_FILENO, "  ", 2);
             }
             write(STDOUT_FILENO, "\n$ ", 3);
@@ -138,72 +144,72 @@ std::string readLine()
           }
         }
 
-      //   if (matches.size() == 1)
-      //   {
-      //     // directly complete it
-      //     string to_write = matches[0];
-      //     string remaining = to_write.substr(prefix.size());
-      //     remaining.push_back(' ');
-      //     buffer.append(remaining);
-      //     write(STDOUT_FILENO, remaining.c_str(), remaining.size());
-      //   }
-      //   else if (matches.empty())
-      //   {
-      //     write(STDOUT_FILENO, "\a", 1);
-      //   }
-      //   else
-      //   {
+        //   if (matches.size() == 1)
+        //   {
+        //     // directly complete it
+        //     string to_write = matches[0];
+        //     string remaining = to_write.substr(prefix.size());
+        //     remaining.push_back(' ');
+        //     buffer.append(remaining);
+        //     write(STDOUT_FILENO, remaining.c_str(), remaining.size());
+        //   }
+        //   else if (matches.empty())
+        //   {
+        //     write(STDOUT_FILENO, "\a", 1);
+        //   }
+        //   else
+        //   {
 
-      //     if (prev_c != '\t')
-      //     {
-      //       // one tab -> beep
-      //       write(STDOUT_FILENO, "\a", 1);
-      //     }
-      //     else
-      //     {
-      //       // two tab -> list
-      //       write(STDOUT_FILENO, "\n", 1);
-      //       for (auto &i : matches)
-      //       {
-      //         write(STDOUT_FILENO, i.c_str(), i.size());
-      //         write(STDOUT_FILENO, " ", 1);
-      //       }
-      //       write(STDOUT_FILENO, "\n$ ", 3);
-      //       write(STDOUT_FILENO, buffer.c_str(), buffer.size());
-      //     }
-      //   }
+        //     if (prev_c != '\t')
+        //     {
+        //       // one tab -> beep
+        //       write(STDOUT_FILENO, "\a", 1);
+        //     }
+        //     else
+        //     {
+        //       // two tab -> list
+        //       write(STDOUT_FILENO, "\n", 1);
+        //       for (auto &i : matches)
+        //       {
+        //         write(STDOUT_FILENO, i.c_str(), i.size());
+        //         write(STDOUT_FILENO, " ", 1);
+        //       }
+        //       write(STDOUT_FILENO, "\n$ ", 3);
+        //       write(STDOUT_FILENO, buffer.c_str(), buffer.size());
+        //     }
+        //   }
 
-      //   if (directories_matches.size() == 0)
-      //   {
-      //     // bell
-      //     write(STDOUT_FILENO, "\a", 1);
-      //   }
-      //   else if (directories_matches.size() == 1)
-      //   {
-      //     string to_write = directories_matches[0];
-      //     string remaining = to_write.substr(prefix.size());
-      //     remaining.push_back('/');
-      //     buffer.append(remaining);
-      //     write(STDOUT_FILENO, remaining.c_str(), remaining.size());
-      //   }
-      //   else
-      //   {
-      //     if (prev_c != '\t')
-      //     {
-      //       write(STDOUT_FILENO, "\a", 1);
-      //     }
-      //     else
-      //     {
-      //       write(STDOUT_FILENO, "\n", 1);
-      //       for (auto &i : directories_matches)
-      //       {
-      //         write(STDOUT_FILENO, i.c_str(), i.size());
-      //         write(STDOUT_FILENO, " ", 1);
-      //       }
-      //       write(STDOUT_FILENO, "\n$ ", 3);
-      //       write(STDOUT_FILENO, buffer.c_str(), buffer.size());
-      //     }
-      //   }
+        //   if (directories_matches.size() == 0)
+        //   {
+        //     // bell
+        //     write(STDOUT_FILENO, "\a", 1);
+        //   }
+        //   else if (directories_matches.size() == 1)
+        //   {
+        //     string to_write = directories_matches[0];
+        //     string remaining = to_write.substr(prefix.size());
+        //     remaining.push_back('/');
+        //     buffer.append(remaining);
+        //     write(STDOUT_FILENO, remaining.c_str(), remaining.size());
+        //   }
+        //   else
+        //   {
+        //     if (prev_c != '\t')
+        //     {
+        //       write(STDOUT_FILENO, "\a", 1);
+        //     }
+        //     else
+        //     {
+        //       write(STDOUT_FILENO, "\n", 1);
+        //       for (auto &i : directories_matches)
+        //       {
+        //         write(STDOUT_FILENO, i.c_str(), i.size());
+        //         write(STDOUT_FILENO, " ", 1);
+        //       }
+        //       write(STDOUT_FILENO, "\n$ ", 3);
+        //       write(STDOUT_FILENO, buffer.c_str(), buffer.size());
+        //     }
+        //   }
       }
       else
       {
