@@ -121,7 +121,7 @@ std::string readLine()
           // all_matches.insert(all_matches.end(), directories_matches.begin(), directories_matches.end());
           std::vector<std::pair<std::string, bool>> all_entries;
           sort(all_entries.begin(), all_entries.end()); 
-          
+
           for (const auto &i : matches)
           {
             all_entries.push_back({i, false});
@@ -152,72 +152,6 @@ std::string readLine()
           }
         }
 
-        //   if (matches.size() == 1)
-        //   {
-        //     // directly complete it
-        //     string to_write = matches[0];
-        //     string remaining = to_write.substr(prefix.size());
-        //     remaining.push_back(' ');
-        //     buffer.append(remaining);
-        //     write(STDOUT_FILENO, remaining.c_str(), remaining.size());
-        //   }
-        //   else if (matches.empty())
-        //   {
-        //     write(STDOUT_FILENO, "\a", 1);
-        //   }
-        //   else
-        //   {
-
-        //     if (prev_c != '\t')
-        //     {
-        //       // one tab -> beep
-        //       write(STDOUT_FILENO, "\a", 1);
-        //     }
-        //     else
-        //     {
-        //       // two tab -> list
-        //       write(STDOUT_FILENO, "\n", 1);
-        //       for (auto &i : matches)
-        //       {
-        //         write(STDOUT_FILENO, i.c_str(), i.size());
-        //         write(STDOUT_FILENO, " ", 1);
-        //       }
-        //       write(STDOUT_FILENO, "\n$ ", 3);
-        //       write(STDOUT_FILENO, buffer.c_str(), buffer.size());
-        //     }
-        //   }
-
-        //   if (directories_matches.size() == 0)
-        //   {
-        //     // bell
-        //     write(STDOUT_FILENO, "\a", 1);
-        //   }
-        //   else if (directories_matches.size() == 1)
-        //   {
-        //     string to_write = directories_matches[0];
-        //     string remaining = to_write.substr(prefix.size());
-        //     remaining.push_back('/');
-        //     buffer.append(remaining);
-        //     write(STDOUT_FILENO, remaining.c_str(), remaining.size());
-        //   }
-        //   else
-        //   {
-        //     if (prev_c != '\t')
-        //     {
-        //       write(STDOUT_FILENO, "\a", 1);
-        //     }
-        //     else
-        //     {
-        //       write(STDOUT_FILENO, "\n", 1);
-        //       for (auto &i : directories_matches)
-        //       {
-        //         write(STDOUT_FILENO, i.c_str(), i.size());
-        //         write(STDOUT_FILENO, " ", 1);
-        //       }
-        //       write(STDOUT_FILENO, "\n$ ", 3);
-        //       write(STDOUT_FILENO, buffer.c_str(), buffer.size());
-        //     }
-        //   }
       }
       else
       {
