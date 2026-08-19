@@ -1,34 +1,28 @@
-[![progress-banner](https://backend.codecrafters.io/progress/shell/cd7f9dad-6026-4cd8-bfe6-86525682e6da)](https://app.codecrafters.io/users/singhvigyat?r=2qF)
+# shell
 
-This is a starting point for C++ solutions to the
-["Build Your Own Shell" Challenge](https://app.codecrafters.io/courses/shell/overview).
+A small Unix shell I wrote in C++.
 
-In this challenge, you'll build your own POSIX compliant shell that's capable of
-interpreting shell commands, running external programs and builtin commands like
-cd, pwd, echo and more. Along the way, you'll learn about shell command parsing,
-REPLs, builtin commands, and more.
+I wanted to understand how a shell actually works, quoting, redirects, builtins, fork/exec, tab completion, so I built one. It is not a full bash replacement. No pipes, no history, no job control.
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+## Build
 
-# Passing the first stage
+Linux, g++ with C++20.
 
-The entry point for your `shell` implementation is in `src/main.cpp`. Study and
-uncomment the relevant code, then run the command below to execute the tests on
-our servers:
-
-```sh
-codecrafters submit
+```
+cd src
+make -f makefile
+./main
 ```
 
-Time to move on to the next stage!
+## What it supports
 
-# Stage 2 & beyond
+- builtins: `echo`, `pwd`, `cd` (including `~`), `type`, `exit`
+- `cat` and `ls`
+- redirects: `>`, `>>`, `1>`, `2>`, `2>>`
+- single quotes, double quotes, backslash escapes
+- tab completion for builtins, executables on PATH, files and directories
+- running other programs with `fork` + `execvp`
 
-Note: This section is for stages 2 and beyond.
+Tab completion is custom (raw mode via termios, not readline). First tab completes if it can. If there are multiple matches it beeps; tab again to list them.
 
-1. Ensure you have `cmake` installed locally
-1. Run `./your_program.sh` to run your program, which is implemented in
-   `src/main.cpp`.
-1. Run `codecrafters submit` to submit your solution to CodeCrafters. Test
-   output will be streamed to your terminal.
+The REPL and builtins live in `src/main.cpp`. Tokenizing and PATH lookup are in `src/modules/utils.cpp`.
